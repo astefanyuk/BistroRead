@@ -1,10 +1,14 @@
 package com.mariko.bistroread;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Property;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -17,32 +21,78 @@ public class HighlighTextView extends LinearLayout {
     private TextView txtLeft;
     private TextView txtRight;
 
+    private TextView[] txtList;
+
     public HighlighTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        LayoutInflater.from(context).inflate(R.layout.a, this);
+        LayoutInflater.from(context).inflate(R.layout.highlight_text_view, this);
 
-        txtCenter = (TextView) findViewById(R.id.txtCenter);
         txtLeft = (TextView) findViewById(R.id.txtLeft);
+        txtCenter = (TextView) findViewById(R.id.txtCenter);
         txtRight = (TextView) findViewById(R.id.txtRight);
+
+        txtList = new TextView[]{txtLeft, txtCenter, txtRight};
+
+        setTextSize(90);
+
     }
 
-    public void setText(String text){
+    public void setTextSize(int size) {
+        for (TextView txt : txtList) {
+            txt.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+        }
+    }
 
-        txtCenter.setText("");
-        txtLeft.setText("");
-        txtRight.setText("");
+    public void setText(String text) {
 
-        if(!TextUtils.isEmpty(text)){
-            int highlightIndex = text.length()/2;
+        for (TextView txt : txtList) {
+            txt.setText("");
+
+            /*
+            if(txt != txtCenter){
+                ObjectAnimator visToInvis = ObjectAnimator.ofFloat(txt, "alpha", 0f, 1f);
+                visToInvis.setDuration(20);
+                visToInvis.setInterpolator(new AccelerateDecelerateInterpolator());
+                visToInvis.start();
+            }
+            */
+
+            if (txt != txtCenter) {
+                final TextView textView = txt;
+                textView.setTextColor(getContext().getResources().getColor(R.color.text_start));
+
+                final Property<TextView, Integer> property = new Property<TextView, Integer>(int.class, "textColor") {
+                    @Override
+                    public Integer get(TextView object) {
+                        return object.getCurrentTextColor();
+                    }
+
+                    @Override
+                    public void set(TextView object, Integer value) {
+                        object.setTextColor(value);
+                    }
+                };
+
+                final ObjectAnimator animator = ObjectAnimator.ofInt(textView, property, getContext().getResources().getColor(R.color.text_end));
+                animator.setDuration(333L);
+                animator.setEvaluator(new ArgbEvaluator());
+                animator.setInterpolator(new DecelerateInterpolator(2));
+                animator.start();
+            }
+        }
+
+        if (!TextUtils.isEmpty(text)) {
+
+            int highlightIndex = text.length() / 2;
 
             txtCenter.setText(text.substring(highlightIndex, highlightIndex + 1));
 
-            if(highlightIndex >0){
+            if (highlightIndex > 0) {
                 txtLeft.setText(text.substring(0, highlightIndex));
             }
 
-            if(highlightIndex < text.length()){
+            if (highlightIndex < text.length()) {
                 txtRight.setText(text.substring(highlightIndex + 1));
             }
         }

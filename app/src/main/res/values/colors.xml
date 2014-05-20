@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="line">#C9CABB</color>
+    <color name="text_end">#000000</color>
+    <color name="text_start">#1E1E1E</color>
 </resources>

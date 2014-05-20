@@ -1,40 +1,85 @@
 package com.mariko.bistroread;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 
 public class MainActivity extends Activity {
 
-    private HighlighTextView[]  txt;
+    private HighlighTextView[] txt;
     private String[] text;
     private int index;
     private Timer timer;
-    private long t = (int)(60 * 1000 * 1.0f / 500);
+
+    final int minValue = 250;
+    final int maxValue = 1000;
+
+    private int wordsPerMinute = minValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        LinearLayout seekBarDividers = (LinearLayout) findViewById(R.id.seekBarDividers);
+        for(int i=minValue; i<=maxValue; i+=50){
+
+            TextView textView = new TextView(this, null);
+            textView.setText("" + i);
+
+            seekBarDividers.addView(textView);
+
+            ((LinearLayout.LayoutParams)textView.getLayoutParams()).weight = 1;
+        }
+
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setMax(100);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                wordsPerMinute = (maxValue - minValue)/100 * i + minValue;
+
+                startTimer();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
         //txt = new HighlighTextView[] {(HighlighTextView) findViewById(R.id.txt1), (HighlighTextView) findViewById(R.id.txt2), (HighlighTextView) findViewById(R.id.txt3)};
         //txt = new HighlighTextView[] {(HighlighTextView) findViewById(R.id.txt1), (HighlighTextView) findViewById(R.id.txt2)};
-        txt = new HighlighTextView[] {(HighlighTextView) findViewById(R.id.txt1)};
+        txt = new HighlighTextView[]{(HighlighTextView) findViewById(R.id.txt1)};
 
 
         text = getString(R.string.my_text).split(" ");
+
+        startTimer();
+    }
+
+    private void startTimer(){
+
+        if(timer != null){
+            timer.cancel();
+        }
+
+        Log.d("ABC", "Word per minute " + wordsPerMinute);
 
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -43,23 +88,24 @@ public class MainActivity extends Activity {
 
                 final String[] str = new String[txt.length];
 
-                int j =0;
-                for(int i=index; i<text.length && j < str.length; i++){
+                int j = 0;
+                for (int i = index; i < text.length && j < str.length; i++) {
 
                     str[j] = text[i];
                     ++j;
                 }
 
-                index+= str.length;
+                index += str.length;
 
-                if(index >= text.length){
+                if (index >= text.length) {
+
                     index = 0;
                 }
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        for(int i=0; i<str.length; i++){
+                        for (int i = 0; i < str.length; i++) {
                             txt[i].setText(str[i]);
                         }
                     }
@@ -67,9 +113,7 @@ public class MainActivity extends Activity {
 
 
             }
-        }, 0, t/txt.length);
-
-
+        }, 2000, (int) (60 * 1000 * 1.0f / wordsPerMinute)/ txt.length);
     }
 
 
@@ -84,7 +128,7 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // as you specify highlight_text_view parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;

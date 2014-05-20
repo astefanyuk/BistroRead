@@ -5,4 +5,13 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="text_black">
+        <item name="android:textColor">@color/text_end</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="text_highlight" parent="text_black">
+        <item name="android:textColor">#FF0000</item>
+    </style>
+
 </resources>
