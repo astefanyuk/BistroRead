@@ -2,16 +2,35 @@ package com.mariko.bistroread;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.sax.ElementListener;
+import android.sax.EndTextElementListener;
+import android.sax.RootElement;
+import android.sax.TextElementListener;
+import android.text.Html;
 import android.util.Log;
+import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.safety.Cleaner;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.xml.parsers.SAXParser;
 
 public class MainActivity extends Activity {
 
@@ -67,8 +86,32 @@ public class MainActivity extends Activity {
         //txt = new HighlighTextView[] {(HighlighTextView) findViewById(R.id.txt1), (HighlighTextView) findViewById(R.id.txt2)};
         txt = new HighlighTextView[]{(HighlighTextView) findViewById(R.id.txt1)};
 
+        try {
 
-        text = getString(R.string.my_text).split(" ");
+            InputStream stream = this.getResources().getAssets().open("test/sample.fb2");
+
+            //File file = new File("/mnt/sdcard/aaa/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
+
+            Document doc = Jsoup.parse(stream,  "windows-1251", "");
+            for(Element element :  doc.select("section")){
+
+                String s = Html.fromHtml(element.text()).toString().replace("\n", "").replace("  ", " ");
+
+                text = s.split(" ");
+                break;
+            }
+
+            /*
+            BufferedReader r = new BufferedReader(new FileInputStream(file));
+            String line;
+            while((line = r.readLine()) != null){
+                if(line.contains("<body"))
+            }
+            */
+
+        }catch(Throwable e){
+            e.printStackTrace();
+        }
 
         startTimer();
     }
