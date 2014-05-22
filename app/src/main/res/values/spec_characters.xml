@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <resources>
+    <string-array name="preffered_characters">
+        <item>AЕЁИОУЫЭЮЯ</item> <!-- RU-->
+        <item>аоеиуі</item> <!-- UA-->
+    </string-array>
+</resources>

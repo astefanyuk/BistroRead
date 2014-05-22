@@ -44,7 +44,7 @@ public class HighlighTextView extends LinearLayout {
         }
     }
 
-    public void setText(String text) {
+    public void setText(ReadController.TextParams textParams) {
 
         for (TextView txt : txtList) {
             txt.setText("");
@@ -82,19 +82,16 @@ public class HighlighTextView extends LinearLayout {
             }
         }
 
-        if (!TextUtils.isEmpty(text)) {
+        if (!TextUtils.isEmpty(textParams.left)) {
+            txtLeft.setText(textParams.left);
+        }
 
-            int highlightIndex = text.length() / 2;
+        if (!TextUtils.isEmpty(textParams.center)) {
+            txtCenter.setText(textParams.center);
+        }
 
-            txtCenter.setText(text.substring(highlightIndex, highlightIndex + 1));
-
-            if (highlightIndex > 0) {
-                txtLeft.setText(text.substring(0, highlightIndex));
-            }
-
-            if (highlightIndex < text.length()) {
-                txtRight.setText(text.substring(highlightIndex + 1));
-            }
+        if (!TextUtils.isEmpty(textParams.right)) {
+            txtRight.setText(textParams.right);
         }
     }
 }
