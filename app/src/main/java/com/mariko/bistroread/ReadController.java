@@ -32,6 +32,14 @@ public abstract class ReadController {
 
     private final static HashSet<String> prefferedCharacters;
 
+    private Boolean isPaused = false;
+
+    public void changePaused() {
+        synchronized (isPaused){
+            isPaused = !isPaused;
+        }
+    }
+
     public static class TextParams {
         public String left;
         public String center;
@@ -68,6 +76,21 @@ public abstract class ReadController {
                 read();
 
                 while (true) {
+
+                    boolean isInPaused = false;
+
+                    synchronized (isPaused){
+                        isInPaused = isPaused;
+                    }
+
+                    if(isInPaused){
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        continue;
+                    }
 
                     final int step = 10;
 
@@ -210,12 +233,13 @@ public abstract class ReadController {
     }
 
     public abstract void onTextChanged(TextParams textParams);
+    public abstract void onTextLoaded(String [] text);
 
     private void read() {
 
         try {
 
-            InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");
+            InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample2.fb2");
 
             //File file = new File("/mnt/sdcard/aaa/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
 
@@ -239,6 +263,8 @@ public abstract class ReadController {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+
+        onTextLoaded(text);
     }
 
     public void setWordsPerMinute(int wordsPerMinute) {
