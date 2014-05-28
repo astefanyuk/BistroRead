@@ -44,6 +44,9 @@ public abstract class ReadController {
         public String left;
         public String center;
         public String right;
+
+        public int index;
+        public String[] text;
     }
 
     static {
@@ -142,6 +145,9 @@ public abstract class ReadController {
                             textParams.right = value.substring(highlightIndex + 1);
                         }
                     }
+
+                    textParams.text = text;
+                    textParams.index = index;
 
                     onTextChanged(textParams);
 

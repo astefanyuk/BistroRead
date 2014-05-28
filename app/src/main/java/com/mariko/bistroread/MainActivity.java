@@ -3,6 +3,8 @@ package com.mariko.bistroread;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.StaticLayout;
+import android.text.TextPaint;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,14 +17,14 @@ public class MainActivity extends Activity {
     private ReadController readController;
 
     private HighlighTextView txt;
-    private TextView txtContent;
+    private ReadContentTextView txtContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtContent = (TextView) findViewById(R.id.txtContent);
+        txtContent = (ReadContentTextView) findViewById(R.id.txtContent);
 
         LinearLayout seekBarDividers = (LinearLayout) findViewById(R.id.seekBarDividers);
         for (int i = ReadController.WORDS_PER_MINUTE_MIN; i <= ReadController.WORDS_PER_MINUTE_MAX; i += 50) {
@@ -65,6 +67,7 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        txtContent.setText(str.text, str.index);
                         txt.setText(str);
                     }
                 });
@@ -73,23 +76,6 @@ public class MainActivity extends Activity {
             @Override
             public void onTextLoaded(final String[] text) {
 
-                final StringBuffer b = new StringBuffer();
-
-                for(String s : text){
-                    b.append(s);
-                    b.append(" ");
-
-                    if(b.length() > 300){
-                        break;
-                    }
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        txtContent.setText(b.toString());
-                    }
-                });
             }
         };
 
