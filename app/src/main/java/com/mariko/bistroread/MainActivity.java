@@ -9,6 +9,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.List;
+
 public class MainActivity extends Activity {
 
     private ReadController readController;
@@ -81,6 +83,28 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
+
+                readController.pause();
+
+                int max = -1;
+
+                List<ReadContentTextView.TextLineInfo> lines = txtContentTop.getLines();
+
+                if(!lines.isEmpty()){
+                    max = Math.max(max, lines.get(lines.size()-1).end);
+                }
+
+                lines = txtContentBottom.getLines();
+
+                if(!lines.isEmpty()){
+                    max = Math.max(max, lines.get(lines.size()-1).end);
+                }
+
+                if(max >=0){
+                    readController.setCurrentIndex(max);
+                }
+
+
                 Log.d("ABC", "onFling");
                 return true;
             }

@@ -50,6 +50,12 @@ public abstract class ReadController {
         }
     }
 
+    public void pause() {
+        synchronized (isPaused){
+            isPaused = true;
+        }
+    }
+
     public boolean isPaused(){
         return isPaused;
     }
@@ -76,6 +82,11 @@ public abstract class ReadController {
             pref.edit().putInt(PREF_WORDS_PER_MINUTE, value).commit();
         }
     }
+
+    public void setCurrentIndex(int index) {
+        this.index = index;
+    }
+
 
     public static class TextParams {
         public String left;

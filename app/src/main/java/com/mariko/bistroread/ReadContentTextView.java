@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ReadContentTextView extends View {
 
@@ -25,7 +26,7 @@ public class ReadContentTextView extends View {
     private String [] text;
     private int index;
 
-    private static class TextLineInfo {
+    public static class TextLineInfo {
         int start;
         int end;
 
@@ -95,6 +96,8 @@ public class ReadContentTextView extends View {
 
             String buffer = "";
 
+            lines.add(new TextLineInfo(index -2, index -2));
+
             for (int i = index -2; i >=0; i--) {
 
                 buffer = text[i] + (buffer.length() == 0 ? "" : " ")  + buffer;
@@ -106,6 +109,8 @@ public class ReadContentTextView extends View {
                 }
 
                 layout = next;
+
+                lines.get(lines.size() - 1).start = i;
             }
 
         }else {
@@ -146,4 +151,9 @@ public class ReadContentTextView extends View {
             layout.draw(canvas);
         }
     }
+
+    public List<TextLineInfo> getLines(){
+        return this.lines;
+    }
+
 }
