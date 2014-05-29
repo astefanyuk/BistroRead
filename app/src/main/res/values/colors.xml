@@ -3,4 +3,7 @@
     <color name="line">#C9CABB</color>
     <color name="text_end">#000000</color>
     <color name="text_start">#1E1E1E</color>
+    <color name="item_stroke">#CECECE</color>
+    <color name="item_bg">#FFFFFF</color>
+    <color name="selected_item_bg">#00FF00</color>
 </resources>

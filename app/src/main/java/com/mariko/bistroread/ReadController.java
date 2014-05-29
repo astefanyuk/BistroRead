@@ -1,5 +1,6 @@
 package com.mariko.bistroread;
 
+import android.content.SharedPreferences;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -15,6 +16,7 @@ import java.util.HashSet;
  */
 public abstract class ReadController {
 
+    public static final String PREF_WORDS_PER_MINUTE = "words_per_minute";
     public int LONG_WORD = 15;
     public static final int WORD_END_PAUSE = 500;
 
@@ -34,9 +36,44 @@ public abstract class ReadController {
 
     private Boolean isPaused = false;
 
+    private final SharedPreferences pref;
+
+    public ReadController(){
+        pref = GApp.sInstance.getSharedPreferences("settings", 0);
+
+        wordsPerMinute = pref.getInt(PREF_WORDS_PER_MINUTE, WORDS_PER_MINUTE_MIN);
+    }
+
     public void changePaused() {
         synchronized (isPaused){
             isPaused = !isPaused;
+        }
+    }
+
+    public boolean isPaused(){
+        return isPaused;
+    }
+
+    public int getWordsPerMinute(){
+        return wordsPerMinute;
+    }
+
+    public void changeWordsPerMinute(boolean increase){
+
+        int value = wordsPerMinute;
+
+        if(increase){
+            value += 50;
+        }else{
+            value -= 50;
+        }
+
+        value = Math.max(value, WORDS_PER_MINUTE_MIN);
+        value = Math.min(value, WORDS_PER_MINUTE_MAX);
+
+        if(wordsPerMinute != value){
+            wordsPerMinute = value;
+            pref.edit().putInt(PREF_WORDS_PER_MINUTE, value).commit();
         }
     }
 
@@ -247,7 +284,7 @@ public abstract class ReadController {
 
             InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample2.fb2");
 
-            //File file = new File("/mnt/sdcard/aaa/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
+            //File file = new File("/mnt/sdcard/oval_bg/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
 
             Document doc = Jsoup.parse(stream, "windows-1251", "");
             for (Element element : doc.select("section")) {
@@ -271,9 +308,5 @@ public abstract class ReadController {
         }
 
         onTextLoaded(text);
-    }
-
-    public void setWordsPerMinute(int wordsPerMinute) {
-        this.wordsPerMinute = wordsPerMinute;
     }
 }

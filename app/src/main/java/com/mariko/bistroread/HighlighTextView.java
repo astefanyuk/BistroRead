@@ -50,13 +50,6 @@ public class HighlighTextView extends LinearLayout {
             txt.setText("");
 
             /*
-            if(txt != txtCenter){
-                ObjectAnimator visToInvis = ObjectAnimator.ofFloat(txt, "alpha", 0f, 1f);
-                visToInvis.setDuration(20);
-                visToInvis.setInterpolator(new AccelerateDecelerateInterpolator());
-                visToInvis.start();
-            }
-            */
 
             if (txt != txtCenter) {
                 final TextView textView = txt;
@@ -80,6 +73,7 @@ public class HighlighTextView extends LinearLayout {
                 animator.setInterpolator(new DecelerateInterpolator(2));
                 animator.start();
             }
+            */
         }
 
         if (!TextUtils.isEmpty(textParams.left)) {

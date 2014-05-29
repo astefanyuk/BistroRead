@@ -18,8 +18,12 @@ public class ReadContentTextView extends View {
     private final TextPaint paint;
     private StaticLayout layout;
 
-    private final int maxLines = 4;
     private ArrayList<TextLineInfo> lines = new ArrayList<TextLineInfo>();
+
+    private boolean displayedOnTop;
+
+    private String [] text;
+    private int index;
 
     private static class TextLineInfo {
         int start;
@@ -47,44 +51,88 @@ public class ReadContentTextView extends View {
 
     }
 
+    public void setDisplayedOnTop(boolean value){
+        this.displayedOnTop = value;
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+
+        if(text != null && View.VISIBLE == visibility){
+            setText(text, index);
+        }
+    }
+
     public void setText(String [] text, int index ){
+
+        this.text = text;
+        this.index = index;
+
+        layout = null;
+        lines.clear();
+
+        if(getVisibility() != View.VISIBLE){
+            return;
+        }
+
+        int maxLines = 3;//displayedOnTop ? 2 : 4;
 
         int width = getMeasuredWidth();
 
+        /*
         if(layout != null &&
                 !lines.isEmpty() &&
                 lines.get(0).start <= index && lines.get(lines.size() -1).end >= index ){
             //no changes
             return;
         }
-
-        StringBuffer buffer = new StringBuffer();
-
-        layout = null;
-        lines.clear();
-
-        lines.add(new TextLineInfo(index, index +1));
+        */
 
         StaticLayout next = null;
 
-        for(int i=index; i<text.length; i++){
+        if(displayedOnTop){
 
-            buffer.append(" " + text[i]);
+            String buffer = "";
 
-            next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
+            for (int i = index -2; i >=0; i--) {
 
-            if(next.getLineCount() >maxLines){
-                break;
+                buffer = text[i] + (buffer.length() == 0 ? "" : " ")  + buffer;
+
+                next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
+
+                if (next.getLineCount() > maxLines) {
+                    break;
+                }
+
+                layout = next;
             }
 
-            layout = next;
+        }else {
 
-            if(layout.getLineCount() > lines.size()){
-                lines.add(new TextLineInfo(lines.get(lines.size() -1).end +1, index +1));
-            }else{
-                lines.get(lines.size() -1).end = i;
+            StringBuffer buffer = new StringBuffer();
+
+            lines.add(new TextLineInfo(index, index + 1));
+
+            for (int i = index; i < text.length; i++) {
+
+                buffer.append(" " + text[i]);
+
+                next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
+
+                if (next.getLineCount() > maxLines) {
+                    break;
+                }
+
+                layout = next;
+
+                if (layout.getLineCount() > lines.size()) {
+                    lines.add(new TextLineInfo(lines.get(lines.size() - 1).end + 1, index + 1));
+                } else {
+                    lines.get(lines.size() - 1).end = i;
+                }
+
             }
-
         }
 
         invalidate();
