@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import java.util.List;
 
@@ -24,7 +26,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        ((FrameLayout)findViewById(R.id.content_frame)).addView(LayoutInflater.from(this).inflate(R.layout.content, null));
+
 
         txtContentTop = (ReadContentTextView) findViewById(R.id.txtContentTop);
         txtContentBottom = (ReadContentTextView) findViewById(R.id.txtContentBottom);
