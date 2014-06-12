@@ -3,6 +3,11 @@ package com.mariko.bistroread;
 import android.content.SharedPreferences;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
+
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,6 +15,9 @@ import org.jsoup.nodes.Element;
 
 import java.io.InputStream;
 import java.util.HashSet;
+
+import data.Book;
+import data.BookContent;
 
 /**
  * Created by AStefaniuk on 5/21/2014.
@@ -297,14 +305,54 @@ public abstract class ReadController {
 
             //File file = new File("/mnt/sdcard/oval_bg/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
 
-            Document doc = Jsoup.parse(stream, "windows-1251", "");
-            for (Element element : doc.select("section")) {
+            ActiveAndroid.beginTransaction();
 
-                String s = Html.fromHtml(element.text()).toString().replace("\n", "").replace("  ", " ");
+            try {
 
-                text = s.split(" ");
-                break;
+                Book book = new Book();
+                book.path = "test/sample2.fb2";
+
+                book.save();
+
+                (new Delete()).from(BookContent.class).execute();
+
+                long start = 0;
+
+                Document doc = Jsoup.parse(stream, "windows-1251", "");
+                for (Element element : doc.select("section")) {
+
+                    String s = Html.fromHtml(element.text()).toString().replace("\n", "").replace("  ", " ");
+
+                    int maxPackage = 5 * 1024;
+
+                    for (int i = 0; i < s.length(); ) {
+
+                        BookContent bookContent = new BookContent();
+
+                        bookContent.content = s.substring(i, Math.min(s.length(), i + maxPackage));
+
+                        bookContent.start = start;
+
+                        start += s.length();
+
+                        bookContent.end = start;
+
+                        bookContent.save();
+
+                        i += maxPackage;
+                    }
+
+                    text = s.split(" ");
+
+                }
+
+                ActiveAndroid.setTransactionSuccessful();
+
+            } finally {
+                ActiveAndroid.endTransaction();
             }
+
+            Log.d("ABC", "Count=" + new Select().from(BookContent.class).count());
 
             /*
             BufferedReader r = new BufferedReader(new FileInputStream(file));
