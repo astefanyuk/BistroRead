@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -13,28 +14,41 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
 
 
 public class FileChooser extends ExpandableListView {
 
+    private static class FileGroup {
+        public String title;
+        public List<File> files;
+
+        public FileGroup(String title, List<File> files) {
+            this.title = title;
+            this.files = files;
+        }
+    }
+
+    private List<FileGroup> groupList = new ArrayList<FileGroup>();
+
     public FileChooser(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        groupList = loadFiles();
 
-        File file = Environment.getExternalStorageDirectory();
-        if(file != null){
-            search(file.getAbsolutePath());
-        }
 
         setAdapter(new BaseExpandableListAdapter() {
             @Override
             public int getGroupCount() {
-                return 2;
+                return groupList.size();
             }
 
             @Override
             public int getChildrenCount(int i) {
-                return 5;
+                return groupList.get(i).files.size();
             }
 
             @Override
@@ -64,16 +78,25 @@ public class FileChooser extends ExpandableListView {
 
             @Override
             public View getGroupView(int i, boolean b, View view, ViewGroup viewGroup) {
-                TextView textView = new TextView(getContext(), null);
-                textView.setText("Hello");
-                return textView;
+                if (view == null) {
+                    view = LayoutInflater.from(getContext()).inflate(R.layout.file_chooser_item_header, null);
+                }
+                TextView textView = (TextView) view.findViewById(R.id.txtTitle);
+                textView.setText(groupList.get(i).title);
+
+                return view;
             }
 
             @Override
             public View getChildView(int i, int i2, boolean b, View view, ViewGroup viewGroup) {
-                TextView textView = new TextView(getContext(), null);
-                textView.setText("Hello");
-                return textView;
+
+                if (view == null) {
+                    view = LayoutInflater.from(getContext()).inflate(R.layout.file_chooser_item, null);
+                }
+                TextView textView = (TextView) view.findViewById(R.id.txtTitle);
+                textView.setText(groupList.get(i).files.get(i2).getName());
+
+                return view;
             }
 
             @Override
@@ -83,7 +106,41 @@ public class FileChooser extends ExpandableListView {
         });
     }
 
-    private void search(String root){
+    private static List<FileGroup> loadFiles() {
+
+        List<FileGroup> fileGroup = new ArrayList<FileGroup>();
+
+        File file = Environment.getExternalStorageDirectory();
+
+        if (file != null) {
+            List<File> files = new ArrayList<File>();
+            search(file.getAbsolutePath(), files);
+
+            Hashtable<String, List<File>> hash = new Hashtable<String, List<File>>();
+            for (File f : files) {
+                String key = f.getParentFile().getAbsolutePath();
+                List<File> fileCollection = hash.get(key);
+                if (fileCollection == null) {
+                    fileCollection = new ArrayList<File>();
+                    hash.put(key, fileCollection);
+                }
+                fileCollection.add(f);
+            }
+
+            List<String> titles = new ArrayList<String>(hash.keySet());
+            Collections.sort(titles);
+
+
+            for (String s : titles) {
+                fileGroup.add(new FileGroup(s, hash.get(s)));
+            }
+
+        }
+
+        return fileGroup;
+    }
+
+    private static void search(String root, List<File> foundedFiles) {
 
         File file = new File(root);
 
@@ -104,10 +161,10 @@ public class FileChooser extends ExpandableListView {
             }
 
             if(f.isDirectory()){
-                    search(f.getAbsolutePath());
+                search(f.getAbsolutePath(), foundedFiles);
             }else{
                 if(f.getName().toLowerCase().contains(".fb2")){
-                    Log.d("ABC", "Added " + f.getAbsolutePath());
+                    foundedFiles.add(f);
                 }
             }
         }

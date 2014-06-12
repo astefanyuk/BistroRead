@@ -6,4 +6,6 @@
     <color name="item_stroke">#CECECE</color>
     <color name="item_bg">#FFFFFF</color>
     <color name="selected_item_bg">#00FF00</color>
+    <color name="item_bg_selected">#9ECCFF</color>
+    <color name="item_header_bg">#CECECE</color>
 </resources>
