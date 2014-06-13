@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     <!-- The navigation drawer -->
-    <com.mariko.bistroread.FileChooser android:id="@+id/left_drawer"
+    <com.mariko.bistroread.FileChooser
+        android:id="@+id/file_chooser"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"

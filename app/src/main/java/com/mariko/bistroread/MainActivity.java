@@ -2,14 +2,22 @@ package com.mariko.bistroread;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.ListPopupWindow;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -23,6 +31,10 @@ public class MainActivity extends Activity {
     private ReadContentTextView txtContentTop;
     private ReadContentTextView txtContentBottom;
 
+    private DrawerLayout drawer_layout;
+
+    private FileChooser fileChooser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +42,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ((FrameLayout)findViewById(R.id.content_frame)).addView(LayoutInflater.from(this).inflate(R.layout.content, null));
 
+        drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        fileChooser = (FileChooser) findViewById(R.id.file_chooser);
 
         txtContentTop = (ReadContentTextView) findViewById(R.id.txtContentTop);
         txtContentBottom = (ReadContentTextView) findViewById(R.id.txtContentBottom);
@@ -157,9 +171,54 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify highlight_text_view parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+
+        if (id == R.id.action_search_file) {
+
+            drawer_layout.openDrawer(fileChooser);
+
             return true;
         }
+
+        if (id == R.id.action_sections) {
+
+            ListPopupWindow popupWindow = new ListPopupWindow(MainActivity.this);
+
+            popupWindow.setAdapter(new BaseAdapter() {
+                @Override
+                public int getCount() {
+                    return readController.getDocument().sections.size();
+                }
+
+                @Override
+                public Object getItem(int i) {
+                    return null;
+                }
+
+                @Override
+                public long getItemId(int i) {
+                    return 0;
+                }
+
+                @Override
+                public View getView(int i, View view, ViewGroup viewGroup) {
+                    if (view == null) {
+                        view = LayoutInflater.from(MainActivity.this).inflate(R.layout.file_chooser_item, null);
+                    }
+                    TextView textView = (TextView) view.findViewById(R.id.txtTitle);
+                    textView.setText(readController.getDocument().sections.get(i).title);
+
+                    return view;
+
+                }
+            });
+
+            popupWindow.setAnchorView(findViewById(R.id.action_sections));
+            popupWindow.setContentWidth(getResources().getDimensionPixelOffset(R.dimen.popup_min_width));
+            popupWindow.show();
+
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 }

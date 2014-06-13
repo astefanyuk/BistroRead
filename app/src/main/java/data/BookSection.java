@@ -4,18 +4,16 @@ import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 
 /**
- * Created by AStefaniuk on 6/12/2014.
+ * Created by AStefaniuk on 6/13/2014.
  */
-public class BookContent extends Model {
-    @Column(name = "Content")
-    public String content;
+public class BookSection extends Model {
+
+    @Column(name = "Title")
+    public String title;
 
     @Column(name = "Start")
     public long start;
 
     @Column(name = "End")
     public long end;
-
-    @Column(name = "Section")
-    public long section;
 }

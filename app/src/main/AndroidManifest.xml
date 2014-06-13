@@ -3,6 +3,7 @@
     package="com.mariko.bistroread">
 
     <application
+
         android:name="com.mariko.bistroread.GApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

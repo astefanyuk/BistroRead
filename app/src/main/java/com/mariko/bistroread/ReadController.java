@@ -14,10 +14,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import data.Book;
 import data.BookContent;
+import data.BookSection;
 
 /**
  * Created by AStefaniuk on 5/21/2014.
@@ -36,15 +39,25 @@ public abstract class ReadController {
 
     private int wordsPerMinute = 250;
 
-    private String[] text;
-
-    private int index;
-
     private final static HashSet<String> prefferedCharacters;
 
     private Boolean isPaused = false;
 
     private final SharedPreferences pref;
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public static class Document {
+
+        public Book book;
+        public List<BookSection> sections = new ArrayList<BookSection>();
+        public String[] text;
+        public int index;
+    }
+
+    private Document document = new Document();
 
     public ReadController(){
         pref = GApp.sInstance.getSharedPreferences("settings", 0);
@@ -92,7 +105,7 @@ public abstract class ReadController {
     }
 
     public void setCurrentIndex(int index) {
-        this.index = index;
+        this.document.index = index;
     }
 
 
@@ -172,15 +185,17 @@ public abstract class ReadController {
 
                     String value = "";
 
-                    for (int i = index; i < text.length; i++) {
+                    int index = document.index;
 
-                        value = text[i];
+                    for (int i = document.index; i < document.text.length; i++) {
+
+                        value = document.text[i];
 
                         ++index;
                         break;
                     }
 
-                    if (index >= text.length) {
+                    if (index >= document.text.length) {
 
                         index = 0;
                     }
@@ -202,7 +217,7 @@ public abstract class ReadController {
                         }
                     }
 
-                    textParams.text = text;
+                    textParams.text = document.text;
                     textParams.index = index;
 
                     onTextChanged(textParams);
@@ -301,7 +316,7 @@ public abstract class ReadController {
 
         try {
 
-            InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample2.fb2");
+            InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");
 
             //File file = new File("/mnt/sdcard/oval_bg/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
 
@@ -314,20 +329,34 @@ public abstract class ReadController {
 
                 book.save();
 
+                (new Delete()).from(Book.class).execute();
                 (new Delete()).from(BookContent.class).execute();
+                (new Delete()).from(BookSection.class).execute();
 
                 long start = 0;
 
-                Document doc = Jsoup.parse(stream, "windows-1251", "");
-                for (Element element : doc.select("section")) {
+                org.jsoup.nodes.Document doc = Jsoup.parse(stream, "windows-1251", "");
+                for (Element sectionElement : doc.select("section")) {
 
-                    String s = Html.fromHtml(element.text()).toString().replace("\n", "").replace("  ", " ");
+                    BookSection bookSection = new BookSection();
+
+                    bookSection.title = Html.fromHtml(sectionElement.select("title").text()).toString().replace("\n", "").replace("  ", " ");
+
+                    bookSection.start = start;
+
+                    String s = Html.fromHtml(sectionElement.text()).toString().replace("\n", "").replace("  ", " ");
+
+                    bookSection.end = start + s.length();
+
+                    Long sectionId = bookSection.save();
 
                     int maxPackage = 5 * 1024;
 
                     for (int i = 0; i < s.length(); ) {
 
                         BookContent bookContent = new BookContent();
+
+                        bookContent.section = sectionId;
 
                         bookContent.content = s.substring(i, Math.min(s.length(), i + maxPackage));
 
@@ -342,7 +371,7 @@ public abstract class ReadController {
                         i += maxPackage;
                     }
 
-                    text = s.split(" ");
+                    document.text = s.split(" ");
 
                 }
 
@@ -352,10 +381,11 @@ public abstract class ReadController {
                 ActiveAndroid.endTransaction();
             }
 
-            Log.d("ABC", "Count=" + new Select().from(BookContent.class).count());
+            document.sections = new Select().from(BookSection.class).execute();
 
             /*
             BufferedReader r = new BufferedReader(new FileInputStream(file));
+
             String line;
             while((line = r.readLine()) != null){
                 if(line.contains("<body"))
@@ -366,6 +396,6 @@ public abstract class ReadController {
             e.printStackTrace();
         }
 
-        onTextLoaded(text);
+        onTextLoaded(document.text);
     }
 }
