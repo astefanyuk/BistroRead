@@ -13,6 +13,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,6 +21,8 @@ import java.util.List;
 
 import data.Book;
 import data.BookContent;
+import data.BookHistory;
+import data.BookParser;
 import data.BookSection;
 
 /**
@@ -45,19 +48,11 @@ public abstract class ReadController {
 
     private final SharedPreferences pref;
 
-    public Document getDocument() {
+    public data.Document getDocument() {
         return document;
     }
 
-    public static class Document {
-
-        public Book book;
-        public List<BookSection> sections = new ArrayList<BookSection>();
-        public String[] text;
-        public int index;
-    }
-
-    private Document document = new Document();
+    private data.Document document = new data.Document();
 
     public ReadController(){
         pref = GApp.sInstance.getSharedPreferences("settings", 0);
@@ -104,9 +99,11 @@ public abstract class ReadController {
         }
     }
 
+    /*
     public void setCurrentIndex(int index) {
         this.document.index = index;
     }
+    */
 
 
     public static class TextParams {
@@ -114,8 +111,7 @@ public abstract class ReadController {
         public String center;
         public String right;
 
-        public int index;
-        public String[] text;
+        public data.Document.BookContentList bookContentList;
     }
 
     static {
@@ -145,7 +141,9 @@ public abstract class ReadController {
             @Override
             public void run() {
 
-                read();
+                File file = new File("/mnt/sdcard/oval_bg/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
+                document = (new BookParser()).parse(file);
+
 
                 while (true) {
 
@@ -183,22 +181,9 @@ public abstract class ReadController {
                         }
                     }
 
-                    String value = "";
+                    data.Document.BookContentList bookContentList = document.getContentNextWord();
 
-                    int index = document.index;
-
-                    for (int i = document.index; i < document.text.length; i++) {
-
-                        value = document.text[i];
-
-                        ++index;
-                        break;
-                    }
-
-                    if (index >= document.text.length) {
-
-                        index = 0;
-                    }
+                    String value = bookContentList.getText();
 
                     TextParams textParams = new TextParams();
 
@@ -217,8 +202,7 @@ public abstract class ReadController {
                         }
                     }
 
-                    textParams.text = document.text;
-                    textParams.index = index;
+                    textParams.bookContentList = bookContentList;
 
                     onTextChanged(textParams);
 
@@ -310,92 +294,8 @@ public abstract class ReadController {
     }
 
     public abstract void onTextChanged(TextParams textParams);
-    public abstract void onTextLoaded(String [] text);
 
-    private void read() {
+    public abstract void onTextLoaded(Document document);
 
-        try {
 
-            InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");
-
-            //File file = new File("/mnt/sdcard/oval_bg/01_Harry_Potter_i_Filosovskij_Kamen.fb2");
-
-            ActiveAndroid.beginTransaction();
-
-            try {
-
-                Book book = new Book();
-                book.path = "test/sample2.fb2";
-
-                book.save();
-
-                (new Delete()).from(Book.class).execute();
-                (new Delete()).from(BookContent.class).execute();
-                (new Delete()).from(BookSection.class).execute();
-
-                long start = 0;
-
-                org.jsoup.nodes.Document doc = Jsoup.parse(stream, "windows-1251", "");
-                for (Element sectionElement : doc.select("section")) {
-
-                    BookSection bookSection = new BookSection();
-
-                    bookSection.title = Html.fromHtml(sectionElement.select("title").text()).toString().replace("\n", "").replace("  ", " ");
-
-                    bookSection.start = start;
-
-                    String s = Html.fromHtml(sectionElement.text()).toString().replace("\n", "").replace("  ", " ");
-
-                    bookSection.end = start + s.length();
-
-                    Long sectionId = bookSection.save();
-
-                    int maxPackage = 5 * 1024;
-
-                    for (int i = 0; i < s.length(); ) {
-
-                        BookContent bookContent = new BookContent();
-
-                        bookContent.section = sectionId;
-
-                        bookContent.content = s.substring(i, Math.min(s.length(), i + maxPackage));
-
-                        bookContent.start = start;
-
-                        start += s.length();
-
-                        bookContent.end = start;
-
-                        bookContent.save();
-
-                        i += maxPackage;
-                    }
-
-                    document.text = s.split(" ");
-
-                }
-
-                ActiveAndroid.setTransactionSuccessful();
-
-            } finally {
-                ActiveAndroid.endTransaction();
-            }
-
-            document.sections = new Select().from(BookSection.class).execute();
-
-            /*
-            BufferedReader r = new BufferedReader(new FileInputStream(file));
-
-            String line;
-            while((line = r.readLine()) != null){
-                if(line.contains("<body"))
-            }
-            */
-
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        onTextLoaded(document.text);
-    }
 }

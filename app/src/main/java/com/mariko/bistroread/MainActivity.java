@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
                 }
 
                 if(max >=0){
-                    readController.setCurrentIndex(max);
+                    //readController.setCurrentIndex(max);
                 }
 
 

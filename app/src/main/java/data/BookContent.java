@@ -1,5 +1,7 @@
 package data;
 
+import android.text.TextUtils;
+
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 
@@ -16,6 +18,20 @@ public class BookContent extends Model {
     @Column(name = "End")
     public long end;
 
-    @Column(name = "Section")
-    public long section;
+    @Column(name = "SectionId")
+    public long sectionId;
+
+    @Column(name = "Position")
+    public int position;
+
+    public String[] text;
+
+    public void parseContent() {
+
+        if (!TextUtils.isEmpty(content)) {
+            text = content.split(" ");
+        } else {
+            text = new String[]{};
+        }
+    }
 }

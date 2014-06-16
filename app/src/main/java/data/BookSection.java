@@ -8,6 +8,9 @@ import com.activeandroid.annotation.Column;
  */
 public class BookSection extends Model {
 
+    @Column(name = "BookId")
+    public long bookId;
+
     @Column(name = "Title")
     public String title;
 

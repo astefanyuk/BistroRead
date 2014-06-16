@@ -23,10 +23,10 @@ public class ReadContentTextView extends View {
 
     private boolean displayedOnTop;
 
-    private String [] text;
-    private int index;
+    private ReadController.TextParams text;
 
     public static class TextLineInfo {
+
         int start;
         int end;
 
@@ -61,14 +61,13 @@ public class ReadContentTextView extends View {
         super.setVisibility(visibility);
 
         if(text != null && View.VISIBLE == visibility){
-            setText(text, index);
+            setText(text);
         }
     }
 
-    public void setText(String [] text, int index ){
+    public void setText(ReadController.TextParams text) {
 
         this.text = text;
-        this.index = index;
 
         layout = null;
         lines.clear();
@@ -80,15 +79,6 @@ public class ReadContentTextView extends View {
         int maxLines = 3;//displayedOnTop ? 2 : 4;
 
         int width = getMeasuredWidth();
-
-        /*
-        if(layout != null &&
-                !lines.isEmpty() &&
-                lines.get(0).start <= index && lines.get(lines.size() -1).end >= index ){
-            //no changes
-            return;
-        }
-        */
 
         StaticLayout next = null;
 
@@ -115,6 +105,10 @@ public class ReadContentTextView extends View {
 
         }else {
 
+
+
+            /*
+
             StringBuffer buffer = new StringBuffer();
 
             lines.add(new TextLineInfo(index, index + 1));
@@ -138,6 +132,7 @@ public class ReadContentTextView extends View {
                 }
 
             }
+            */
         }
 
         invalidate();
