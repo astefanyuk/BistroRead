@@ -14,6 +14,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.BookContent;
+
 public class ReadContentTextView extends View {
 
     private final TextPaint paint;
@@ -30,7 +32,7 @@ public class ReadContentTextView extends View {
         int start;
         int end;
 
-        public TextLineInfo(int start, int end){
+        public TextLineInfo(int start, int end) {
             this.start = start;
             this.end = end;
         }
@@ -52,7 +54,25 @@ public class ReadContentTextView extends View {
 
     }
 
-    public void setDisplayedOnTop(boolean value){
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+
+        if (changed) {
+
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    if (text != null && View.VISIBLE == getVisibility()) {
+                        setText(text);
+                    }
+                }
+            });
+
+        }
+    }
+
+    public void setDisplayedOnTop(boolean value) {
         this.displayedOnTop = value;
     }
 
@@ -60,7 +80,7 @@ public class ReadContentTextView extends View {
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
 
-        if(text != null && View.VISIBLE == visibility){
+        if (text != null && View.VISIBLE == visibility) {
             setText(text);
         }
     }
@@ -72,67 +92,96 @@ public class ReadContentTextView extends View {
         layout = null;
         lines.clear();
 
-        if(getVisibility() != View.VISIBLE){
+        if (getVisibility() != View.VISIBLE) {
             return;
         }
-
-        int maxLines = 3;//displayedOnTop ? 2 : 4;
 
         int width = getMeasuredWidth();
 
         StaticLayout next = null;
 
-        if(displayedOnTop){
+        int maxHeight = getMeasuredHeight();
+
+        if (displayedOnTop) {
 
             String buffer = "";
 
-            lines.add(new TextLineInfo(index -2, index -2));
+            for (int i = text.bookContentList.position; i >= 0; i--) {
 
-            for (int i = index -2; i >=0; i--) {
+                BookContent bookContent = text.bookContentList.getContent(i);
 
-                buffer = text[i] + (buffer.length() == 0 ? "" : " ")  + buffer;
-
-                next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
-
-                if (next.getLineCount() > maxLines) {
+                if (bookContent == null) {
                     break;
                 }
 
-                layout = next;
+                int startPosition;
 
-                lines.get(lines.size() - 1).start = i;
+                if (i == text.bookContentList.position) {
+                    startPosition = text.bookContentList.index - 1;
+                } else {
+                    startPosition = bookContent.text.length - 1;
+                }
+
+                for (int j = startPosition; j >= 0; j--) {
+
+                    buffer = bookContent.text[j] + (buffer.length() == 0 ? "" : " ") + buffer;
+
+                    next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
+
+                    if (next.getHeight() > maxHeight) {
+                        break;
+                    }
+
+                    layout = next;
+
+                    //lines.get(lines.size() - 1).start = i;
+                }
             }
 
-        }else {
+        } else {
 
-
-
-            /*
+            //lines.add(new TextLineInfo(index, index + 1));
 
             StringBuffer buffer = new StringBuffer();
 
-            lines.add(new TextLineInfo(index, index + 1));
+            for (int i = text.bookContentList.position; ; i++) {
 
-            for (int i = index; i < text.length; i++) {
+                BookContent bookContent = text.bookContentList.getContent(i);
 
-                buffer.append(" " + text[i]);
-
-                next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
-
-                if (next.getLineCount() > maxLines) {
+                if (bookContent == null) {
                     break;
                 }
 
-                layout = next;
+                int startPosition;
 
-                if (layout.getLineCount() > lines.size()) {
-                    lines.add(new TextLineInfo(lines.get(lines.size() - 1).end + 1, index + 1));
+                if (i == text.bookContentList.position) {
+                    startPosition = text.bookContentList.index + 1;
                 } else {
-                    lines.get(lines.size() - 1).end = i;
+                    startPosition = 0;
                 }
 
+
+                for (int j = startPosition; j < bookContent.text.length; j++) {
+
+                    buffer.append(" " + bookContent.text[j]);
+
+                    next = new StaticLayout(buffer.toString(), paint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
+
+                    if (next.getHeight() > maxHeight) {
+                        break;
+                    }
+
+                    layout = next;
+
+                    /*
+                    if (layout.getLineCount() > lines.size()) {
+                        lines.add(new TextLineInfo(lines.get(lines.size() - 1).end + 1, index + 1));
+                    } else {
+                        lines.get(lines.size() - 1).end = i;
+                    }
+                    */
+                }
             }
-            */
         }
 
         invalidate();
@@ -142,12 +191,12 @@ public class ReadContentTextView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(layout != null){
+        if (layout != null) {
             layout.draw(canvas);
         }
     }
 
-    public List<TextLineInfo> getLines(){
+    public List<TextLineInfo> getLines() {
         return this.lines;
     }
 

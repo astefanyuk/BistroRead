@@ -3,14 +3,11 @@ package com.mariko.bistroread;
 import android.content.Context;
 import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -144,26 +141,26 @@ public class FileChooser extends ExpandableListView {
 
         File file = new File(root);
 
-        if(file.isHidden()){
+        if (file.isHidden()) {
             return;
         }
 
-        File [] files = file.listFiles();
+        File[] files = file.listFiles();
 
-        if(files == null || files.length ==0){
+        if (files == null || files.length == 0) {
             return;
         }
 
-        for(File f : files){
+        for (File f : files) {
 
-            if(f.isHidden()){
+            if (f.isHidden()) {
                 continue;
             }
 
-            if(f.isDirectory()){
+            if (f.isDirectory()) {
                 search(f.getAbsolutePath(), foundedFiles);
-            }else{
-                if(f.getName().toLowerCase().contains(".fb2")){
+            } else {
+                if (f.getName().toLowerCase().contains(".fb2")) {
                     foundedFiles.add(f);
                 }
             }

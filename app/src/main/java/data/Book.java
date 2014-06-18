@@ -18,9 +18,10 @@ public class Book extends Model {
     @Column(name = "ModifiedSize")
     public long modifiedDate;
 
-    @Column(name = "position")
+    @Column(name = "Position")
     public long position;
 
+    @Column(name = "MaxContentPosition")
     public long maxContentPosition;
 
     public Book() {

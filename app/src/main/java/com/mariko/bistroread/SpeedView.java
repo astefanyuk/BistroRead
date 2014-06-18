@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -69,7 +68,7 @@ public class SpeedView extends LinearLayout {
 
     }
 
-    private void changeValue(final View view, final boolean increase){
+    private void changeValue(final View view, final boolean increase) {
 
         getHandler().removeCallbacks(changeRunnable);
 
@@ -80,7 +79,7 @@ public class SpeedView extends LinearLayout {
         changeRunnable = new Runnable() {
             @Override
             public void run() {
-                if(view.isPressed()){
+                if (view.isPressed()) {
                     changeValue(view, increase);
                 }
             }
@@ -96,11 +95,11 @@ public class SpeedView extends LinearLayout {
         super.onDetachedFromWindow();
     }
 
-    private void updateSpeed(int value){
+    private void updateSpeed(int value) {
         speedValue.setText(String.valueOf(value) + getResources().getString(R.string.wpm));
     }
 
-    public void setReadController(ReadController readController){
+    public void setReadController(ReadController readController) {
         this.readController = readController;
 
         updateSpeed(this.readController.getWordsPerMinute());

@@ -28,6 +28,10 @@ public class Document {
         public String getText() {
             return bookContentList.get(position).text[index];
         }
+
+        public BookContent getContent(int index) {
+            return bookContentList.get(index);
+        }
     }
 
     private BookContentList bookContentList = new BookContentList();
@@ -57,16 +61,18 @@ public class Document {
 
     private void putContentIntoCache() {
 
-        for (int i = bookContentList.position - CACHE_OFFSET_COUNT; i <= bookContentList.position + CACHE_OFFSET_COUNT; i++) {
+        for (int i = Math.max(0, bookContentList.position - CACHE_OFFSET_COUNT); i <= Math.min(book.maxContentPosition, bookContentList.position + CACHE_OFFSET_COUNT); i++) {
 
-            if (i < 0 || i >= book.maxContentPosition || bookContentList.bookContentList.get(i) != null) {
+            if (bookContentList.bookContentList.get(i) != null) {
                 continue;
             }
 
             BookContent bookContent = new Select()
                     .from(BookContent.class)
-                    .and("position = ", i)
+                    .and("position = ?", i)
                     .executeSingle();
+
+            bookContent.parseContent();
 
             bookContentList.bookContentList.put(i, bookContent);
         }
@@ -82,7 +88,7 @@ public class Document {
 
     public void read(File file) {
 
-        this.book = new Select().from(Book.class).and("path=", file.getAbsoluteFile()).executeSingle();
+        this.book = new Select().from(Book.class).and("path = ?", file.getAbsoluteFile()).executeSingle();
         if (this.book != null) {
             if (file.length() != this.book.size || file.lastModified() != this.book.modifiedDate) {
                 deleteByBookId(this.book.getId());

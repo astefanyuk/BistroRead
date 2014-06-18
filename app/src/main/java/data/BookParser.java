@@ -54,7 +54,7 @@ public class BookParser {
 
                     long start = 0;
 
-                    long bookContentPosition = 0;
+                    int bookContentPosition = 0;
 
                     org.jsoup.nodes.Document doc = Jsoup.parse(stream, "windows-1251", "");
                     for (Element sectionElement : doc.select("section")) {
@@ -99,6 +99,9 @@ public class BookParser {
                         }
 
                     }
+
+                    book.maxContentPosition = bookContentPosition;
+                    book.save();
 
                     ActiveAndroid.setTransactionSuccessful();
 

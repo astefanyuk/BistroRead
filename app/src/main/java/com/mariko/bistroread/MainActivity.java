@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,10 +14,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListPopupWindow;
-import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import org.jsoup.nodes.Document;
+
+import java.io.File;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -35,12 +35,22 @@ public class MainActivity extends Activity {
 
     private FileChooser fileChooser;
 
+    private View progressLayout;
+    private View progressBar;
+    private TextView progressBarStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        ((FrameLayout)findViewById(R.id.content_frame)).addView(LayoutInflater.from(this).inflate(R.layout.content, null));
+        ((FrameLayout) findViewById(R.id.content_frame)).addView(LayoutInflater.from(this).inflate(R.layout.content, null));
+
+        progressLayout = findViewById(R.id.progressLayout);
+        progressBar = findViewById(R.id.progressBar);
+        progressBarStatus = (TextView) findViewById(R.id.progressBarStatus);
+
+        progressLayout.setVisibility(View.GONE);
 
         drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
         fileChooser = (FileChooser) findViewById(R.id.file_chooser);
@@ -57,7 +67,31 @@ public class MainActivity extends Activity {
 
         txt = (HighlighTextView) findViewById(R.id.txt1);
 
-        readController = new ReadController() {
+        readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
+
+            @Override
+            protected void onLoading(final boolean started) {
+
+                if (isFinishing()) {
+                    return;
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (started) {
+                            progressLayout.setVisibility(View.VISIBLE);
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressBarStatus.setText(GApp.sInstance.getString(R.string.loading_file, readController.getFile().getName()));
+                        } else {
+                            progressLayout.setVisibility(View.GONE);
+                        }
+
+                    }
+                });
+            }
+
+            @Override
             public void onTextChanged(final TextParams str) {
                 if (isFinishing()) {
                     return;
@@ -66,16 +100,11 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        txtContentTop.setText(str.text, str.index);
-                        txtContentBottom.setText(str.text, str.index);
+                        txtContentTop.setText(str);
+                        txtContentBottom.setText(str);
                         txt.setText(str);
                     }
                 });
-            }
-
-            @Override
-            public void onTextLoaded(final String[] text) {
-
             }
         };
 
@@ -109,17 +138,17 @@ public class MainActivity extends Activity {
 
                 List<ReadContentTextView.TextLineInfo> lines = txtContentTop.getLines();
 
-                if(!lines.isEmpty()){
-                    max = Math.max(max, lines.get(lines.size()-1).end);
+                if (!lines.isEmpty()) {
+                    max = Math.max(max, lines.get(lines.size() - 1).end);
                 }
 
                 lines = txtContentBottom.getLines();
 
-                if(!lines.isEmpty()){
-                    max = Math.max(max, lines.get(lines.size()-1).end);
+                if (!lines.isEmpty()) {
+                    max = Math.max(max, lines.get(lines.size() - 1).end);
                 }
 
-                if(max >=0){
+                if (max >= 0) {
                     //readController.setCurrentIndex(max);
                 }
 
@@ -149,7 +178,7 @@ public class MainActivity extends Activity {
         updateView();
     }
 
-    private void updateView(){
+    private void updateView() {
         txtContentTop.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
         txtContentBottom.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
         speedView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);

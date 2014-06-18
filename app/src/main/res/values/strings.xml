@@ -7,5 +7,6 @@
     <string name="wpm">wpm</string>
     <string name="open_book">Open Book</string>
     <string name="sections">Sections</string>
+    <string name="loading_file">Loading %s.\nPlease wait...</string>
 
 </resources>
