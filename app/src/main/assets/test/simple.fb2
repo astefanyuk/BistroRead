@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
+	<body>
+		<title>
+			<p>Джоанн Кэтлин Роулинг</p>
+		</title>
+		<section>
+
+		<title>
+    <p>Гарри Поттер и Философский Камень</p>
+   </title>
+   <epigraph>
+    <p>Гарри Поттер - 1</p>
+    <p>«Дж. К. Ролинг Гарри Поттер и Философский Камень»: РОСМЭН-Издат; 2001</p>
+    <empty-line/>
+    <p>Одиннадцатилетний мальчик-сирота Гарри Поттер живет в семье своей тетки.</p>
+   </epigraph>
+	   <section>
+		<title>
+		 <p>Глава 1. МАЛЬЧИК, КОТОРЫЙ ВЫЖИЛ</p>
+		</title>
+		Мистер и миссис Дурсль проживали в доме номер четыре. 
+	   </section>
+	   <section>
+		<title>
+		 <p>Глава 2. ИСЧЕЗНУВШЕЕ СТЕКЛО</p>
+		</title>
+		Почти десять лет прошло с того утра.
+	   </section>
+		
+		</section>
+	</body>   
+</FictionBook>

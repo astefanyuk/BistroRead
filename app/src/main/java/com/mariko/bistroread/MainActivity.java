@@ -67,7 +67,8 @@ public class MainActivity extends Activity {
 
         txt = (HighlighTextView) findViewById(R.id.txt1);
 
-        readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
+        readController = new ReadController(new File("/mnt/sdcard/Download/simple.fb2")) {
+            //readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
 
             @Override
             protected void onLoading(final boolean started) {

@@ -102,6 +102,8 @@ public class ReadContentTextView extends View {
 
         int maxHeight = getMeasuredHeight();
 
+        BookContent currentBookContent = text.bookContentList.getContent(text.bookContentList.position);
+
         if (displayedOnTop) {
 
             String buffer = "";
@@ -110,7 +112,7 @@ public class ReadContentTextView extends View {
 
                 BookContent bookContent = text.bookContentList.getContent(i);
 
-                if (bookContent == null) {
+                if (bookContent == null || bookContent.sectionId != currentBookContent.sectionId) {
                     break;
                 }
 
@@ -148,7 +150,7 @@ public class ReadContentTextView extends View {
 
                 BookContent bookContent = text.bookContentList.getContent(i);
 
-                if (bookContent == null) {
+                if (bookContent == null || bookContent.sectionId != currentBookContent.sectionId) {
                     break;
                 }
 

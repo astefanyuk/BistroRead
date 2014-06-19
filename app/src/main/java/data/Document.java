@@ -26,7 +26,16 @@ public class Document {
         public int index;
 
         public String getText() {
-            return bookContentList.get(position).text[index];
+
+            BookContent bookContent = getContent(position);
+
+            if (bookContent != null) {
+
+                if (bookContent.text != null && index >= 0 && index < bookContent.text.length) {
+                    return bookContent.text[index];
+                }
+            }
+            return null;
         }
 
         public BookContent getContent(int index) {

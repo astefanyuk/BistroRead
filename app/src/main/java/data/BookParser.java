@@ -1,21 +1,35 @@
 package data;
 
 import android.text.Html;
+import android.text.TextUtils;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 
 /**
  * Created by AStefaniuk on 6/16/2014.
  */
 public class BookParser {
+
+    public BookParserBase getBookParser(File file) {
+        if (file.getName().toLowerCase().endsWith(".fb2")) {
+            return new BookParserFb2(file);
+        } else if (file.getName().toLowerCase().endsWith(".epub")) {
+            return new BookParserFb2(file);
+        } else {
+            return new BookParserText(file);
+        }
+    }
 
     public Document parse(File file) {
 
@@ -34,93 +48,27 @@ public class BookParser {
             }
 
             //InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");
-            InputStream stream = null;
+
+            BookParserBase bookParserBase = getBookParser(file);
+
+            ActiveAndroid.beginTransaction();
 
             try {
 
-                stream = new FileInputStream(file);
+                (new Delete()).from(Book.class).execute();
+                (new Delete()).from(BookContent.class).execute();
+                (new Delete()).from(BookSection.class).execute();
 
-                ActiveAndroid.beginTransaction();
+                bookParserBase.parseContent();
 
-                try {
-
-                    (new Delete()).from(Book.class).execute();
-                    (new Delete()).from(BookContent.class).execute();
-                    (new Delete()).from(BookSection.class).execute();
-
-
-                    Book book = new Book(file);
-                    book.save();
-
-                    long start = 0;
-
-                    int bookContentPosition = 0;
-
-                    org.jsoup.nodes.Document doc = Jsoup.parse(stream, "windows-1251", "");
-                    for (Element sectionElement : doc.select("section")) {
-
-                        BookSection bookSection = new BookSection();
-
-                        bookSection.bookId = book.getId();
-
-                        bookSection.title = Html.fromHtml(sectionElement.select("title").text()).toString().replace("\n", "").replace("  ", " ");
-
-                        bookSection.start = start;
-
-                        String s = Html.fromHtml(sectionElement.text()).toString().replace("\n", "").replace("  ", " ");
-
-                        bookSection.end = start + s.length();
-
-                        Long sectionId = bookSection.save();
-
-                        int maxPackage = 5 * 1024;
-
-                        for (int i = 0; i < s.length(); ) {
-
-                            BookContent bookContent = new BookContent();
-
-                            bookContent.position = bookContentPosition;
-
-                            ++bookContentPosition;
-
-                            bookContent.sectionId = sectionId;
-
-                            bookContent.content = s.substring(i, Math.min(s.length(), i + maxPackage));
-
-                            bookContent.start = start;
-
-                            start += s.length();
-
-                            bookContent.end = start;
-
-                            bookContent.save();
-
-                            i += maxPackage;
-                        }
-
-                    }
-
-                    book.maxContentPosition = bookContentPosition;
-                    book.save();
-
-                    ActiveAndroid.setTransactionSuccessful();
-
-                } finally {
-                    ActiveAndroid.endTransaction();
-                }
-
-
-                document.read(file);
+                ActiveAndroid.setTransactionSuccessful();
 
             } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (Throwable e) {
-
-                    }
-                }
+                ActiveAndroid.endTransaction();
             }
+
+
+            document.read(file);
 
         } catch (Throwable e) {
             e.printStackTrace();
