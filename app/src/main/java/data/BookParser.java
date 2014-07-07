@@ -44,7 +44,7 @@ public class BookParser {
             document.read(file);
 
             if (document.book != null && !document.sections.isEmpty()) {
-                return document;
+                //   return document;
             }
 
             //InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");

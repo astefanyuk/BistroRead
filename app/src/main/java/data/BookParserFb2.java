@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
@@ -56,6 +57,10 @@ public class BookParserFb2 extends BookParserBase {
         }
     }
 
+    private static String htmlToString(String html) {
+        return Html.fromHtml(html.trim()).toString().replace("\n", "").replace("  ", " ");
+    }
+
     @Override
     public void parseContent() {
 
@@ -71,32 +76,38 @@ public class BookParserFb2 extends BookParserBase {
 
             long start = 0;
 
-            int bookContentPosition = 0;
+            int bookContentPosition = -1;
 
             org.jsoup.nodes.Document doc = Jsoup.parse(stream, encoding, "");
             for (Element sectionElement : doc.select("section")) {
 
-                Elements titleElements = sectionElement.select("title");
+                ++bookContentPosition;
+
+                StringBuffer content = new StringBuffer();
 
                 BookSection bookSection = new BookSection();
-
                 bookSection.bookId = book.getId();
 
-                if (titleElements.size() > 0) {
-                    bookSection.title = Html.fromHtml(titleElements.get(0).text()).toString().replace("\n", "").replace("  ", " ");
-                } else {
-                    bookSection.title = file.getName();
+                for (Node node : sectionElement.childNodes()) {
+                    if ("title".equalsIgnoreCase(node.nodeName())) {
+                        bookSection.title = htmlToString(((Element) node).text());
+                    } else if ("section".equalsIgnoreCase(node.nodeName())) {
+                        break;
+                    } else {
+                        if (content.length() > 0) {
+                            content.append("\n");
+                        }
+                        content.append(htmlToString(node.outerHtml()));
+                    }
                 }
 
                 bookSection.start = start;
 
-                String s = Html.fromHtml(sectionElement.text()).toString().replace("\n", "").replace("  ", " ");
-
-                bookSection.end = start + s.length();
+                bookSection.end = start + content.length();
 
                 bookSection.save();
 
-                BookContent bookContent = saveContent(s, bookSection, bookContentPosition, start);
+                BookContent bookContent = saveContent(content.toString(), bookSection, bookContentPosition, start);
 
                 if (bookContent != null) {
                     bookContentPosition = bookContent.position;

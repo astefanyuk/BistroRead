@@ -12,7 +12,7 @@ public class BookSection extends Model {
     public long bookId;
 
     @Column(name = "Title")
-    public String title;
+    public String title = "";
 
     @Column(name = "Start")
     public long start;

@@ -70,7 +70,9 @@ public class Document {
 
     private void putContentIntoCache() {
 
-        for (int i = Math.max(0, bookContentList.position - CACHE_OFFSET_COUNT); i <= Math.min(book.maxContentPosition, bookContentList.position + CACHE_OFFSET_COUNT); i++) {
+        for (int i = Math.max(0, bookContentList.position - CACHE_OFFSET_COUNT);
+             i <= Math.min(book.maxContentPosition, bookContentList.position + CACHE_OFFSET_COUNT);
+             i++) {
 
             if (bookContentList.bookContentList.get(i) != null) {
                 continue;
@@ -81,9 +83,12 @@ public class Document {
                     .and("position = ?", i)
                     .executeSingle();
 
-            bookContent.parseContent();
+            if (bookContent != null) {
+                bookContent.parseContent();
+                bookContentList.bookContentList.put(i, bookContent);
+            }
 
-            bookContentList.bookContentList.put(i, bookContent);
+
         }
     }
 
