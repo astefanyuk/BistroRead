@@ -115,6 +115,13 @@ public abstract class ReadController {
         }
     }
 
+    private String cleanText(String text) {
+        if (!TextUtils.isEmpty(text)) {
+            return text.replace("\n", "").trim();
+        }
+        return text;
+    }
+
     public void start() {
 
         if (thread != null) {
@@ -179,14 +186,14 @@ public abstract class ReadController {
 
                         int highlightIndex = getHighlightIndex(value);
 
-                        textParams.center = value.substring(highlightIndex, highlightIndex + 1);
+                        textParams.center = cleanText(value.substring(highlightIndex, highlightIndex + 1));
 
                         if (highlightIndex > 0) {
-                            textParams.left = value.substring(0, highlightIndex);
+                            textParams.left = cleanText(value.substring(0, highlightIndex));
                         }
 
                         if (highlightIndex < value.length()) {
-                            textParams.right = value.substring(highlightIndex + 1);
+                            textParams.right = cleanText(value.substring(highlightIndex + 1));
                         }
                     }
 

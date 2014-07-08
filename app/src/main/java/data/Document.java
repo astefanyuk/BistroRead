@@ -52,16 +52,22 @@ public class Document {
         BookContent current = bookContentList.bookContentList.get(bookContentList.position);
 
         if (bookContentList.index < current.text.length) {
+
+            if (bookContentList.index == current.text.length - 1 && current.position == book.maxContentPosition) {
+                //last item
+                return bookContentList;
+            }
+
             ++bookContentList.index;
 
-            return bookContentList;
-        }
+        } else {
 
-        current = bookContentList.bookContentList.get(bookContentList.position + 1);
+            current = bookContentList.bookContentList.get(bookContentList.position + 1);
 
-        if (current != null) {
-            ++bookContentList.position;
-            bookContentList.index = 0;
+            if (current != null) {
+                ++bookContentList.position;
+                bookContentList.index = 0;
+            }
         }
 
 

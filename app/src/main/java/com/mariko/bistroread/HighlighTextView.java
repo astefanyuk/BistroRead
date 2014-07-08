@@ -3,11 +3,18 @@ package com.mariko.bistroread;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.text.Layout;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -30,14 +37,12 @@ public class HighlighTextView extends LinearLayout {
 
     private final TextPaint textPaint;
 
-    private float aaa;
+    private int viewWidth;
 
     public HighlighTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         LayoutInflater.from(context).inflate(R.layout.highlight_text_view, this);
-
-        aaa = getResources().getDimensionPixelOffset(R.dimen.highlight_offset);
 
         txtLeft = (TextView) findViewById(R.id.txtLeft);
         txtCenter = (TextView) findViewById(R.id.txtCenter);
@@ -50,6 +55,21 @@ public class HighlighTextView extends LinearLayout {
 
         setTextSize(MAX_FONT);
 
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        if (changed) {
+            Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            DisplayMetrics metrics = new DisplayMetrics();
+            display.getMetrics(metrics);
+
+            viewWidth = (int) (metrics.widthPixels - 100 * metrics.density);
+        }
+
+
+        super.onLayout(changed, l, t, r, b);
     }
 
     public void setTextSize(int font) {
@@ -74,26 +94,18 @@ public class HighlighTextView extends LinearLayout {
         StringBuffer buffer = new StringBuffer();
 
         if (!TextUtils.isEmpty(textParams.left)) {
-            txtLeft.setText(textParams.left);
-
             buffer.append(textParams.left);
         }
 
         if (!TextUtils.isEmpty(textParams.center)) {
-            txtCenter.setText(textParams.center);
-
             buffer.append(textParams.center);
         }
 
         if (!TextUtils.isEmpty(textParams.right)) {
-            txtRight.setText(textParams.right);
-
             buffer.append(textParams.right);
         }
 
         if (buffer.length() > 0) {
-
-            int width = getMeasuredWidth();
 
             int newFontSize = 0;
 
@@ -103,15 +115,27 @@ public class HighlighTextView extends LinearLayout {
 
                 textPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, i, GApp.sInstance.getResources().getDisplayMetrics()));
 
-                textPaint.getTextBounds(buffer.toString(), 0, buffer.length(), rect);
+                StaticLayout staticLayout = new StaticLayout(buffer.toString(), textPaint, viewWidth, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
 
-                if ((rect.width() + aaa) <= width) {
+                if (staticLayout.getLineCount() <= 1) {
                     break;
                 }
             }
 
             setTextSize(newFontSize);
 
+        }
+
+        if (!TextUtils.isEmpty(textParams.left)) {
+            txtLeft.setText(textParams.left);
+        }
+
+        if (!TextUtils.isEmpty(textParams.center)) {
+            txtCenter.setText(textParams.center);
+        }
+
+        if (!TextUtils.isEmpty(textParams.right)) {
+            txtRight.setText(textParams.right);
         }
     }
 }
