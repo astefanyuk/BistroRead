@@ -43,7 +43,7 @@ public abstract class BookParserBase {
 
             bookContent.save();
 
-            Log.d("ABC", bookContent.toString());
+            //Log.d("ABC", bookContent.toString());
 
             i += maxPackage;
         }

@@ -18,16 +18,12 @@ public class Document {
 
     private static int CACHE_OFFSET_COUNT = 2;
 
-    public boolean isValid() {
-        return !sections.isEmpty();
-    }
-
     public static class BookContentList {
 
         private LruCache<Integer, BookContent> bookContentList = new LruCache<Integer, BookContent>(CACHE_OFFSET_COUNT * 2 + 2);
 
         public int position;
-        public int index;
+        public int index = -1;
 
         public String getText() {
 
@@ -129,16 +125,19 @@ public class Document {
         }
     }
 
-    private void load(long position) {
+    public boolean isValid() {
+        return !sections.isEmpty();
+    }
+
+    public void moveToPosition(long position) {
+
+        BookContent bookContent = new Select().from(BookContent.class).and("Start <= ?", position).and("End >= ?", position).executeSingle();
 
         bookContentList = new BookContentList();
 
-        BookContent bookContent = new Select().from(BookContent.class).and("Start <= ", position).and("End >= ", position).executeSingle();
+        bookContentList.position = bookContent.position;
 
         bookContentList.bookContentList.put(bookContent.position, bookContent);
-
-        putContentIntoCache();
-
     }
 
 }

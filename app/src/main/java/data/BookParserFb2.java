@@ -102,6 +102,10 @@ public class BookParserFb2 extends BookParserBase {
 
                     } else {
                         //content
+                        if (!TextUtils.isEmpty(bookSection.title) && content.length() == 0) {
+                            content.append(bookSection.title + "\n");
+                        }
+
                         if (content.length() > 0) {
                             content.append("\n");
                         }
@@ -109,22 +113,15 @@ public class BookParserFb2 extends BookParserBase {
                     }
                 }
 
-                String contentString = "";
-
-                if (!TextUtils.isEmpty(bookSection.title)) {
-                    contentString = bookSection.title + "\n";
-                }
-                contentString += content.toString();
-
                 bookSection.start = start;
 
-                bookSection.end = start + contentString.length();
+                bookSection.end = start + content.length();
 
                 bookSection.save();
 
                 Log.d("ABC", bookSection.toString());
 
-                BookContent bookContent = saveContent(contentString.toString(), bookSection, bookContentPosition, start);
+                BookContent bookContent = saveContent(content.toString(), bookSection, bookContentPosition, start);
 
                 start = bookSection.end + 1;
 
@@ -135,6 +132,7 @@ public class BookParserFb2 extends BookParserBase {
             }
 
             book.maxContentPosition = bookContentPosition;
+            book.contentSize = start;
             book.save();
 
             Log.d("ABC", book.toString());

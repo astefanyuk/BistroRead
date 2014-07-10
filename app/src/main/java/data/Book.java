@@ -25,6 +25,9 @@ public class Book extends Model {
     @Column(name = "MaxContentPosition")
     public long maxContentPosition;
 
+    @Column(name = "ContentSize")
+    public long contentSize;
+
     public Book() {
 
     }

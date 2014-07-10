@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Objects;
 
+import data.BookContent;
 import data.BookParser;
 
 /**
@@ -36,6 +37,8 @@ public abstract class ReadController {
     public data.Document getDocument() {
         return document;
     }
+
+    public float percent;
 
     private data.Document document = new data.Document();
 
@@ -170,7 +173,7 @@ public abstract class ReadController {
                                 return;
                             }
 
-                            if (!isInPaused) {
+                            if (!isInPaused || !firstTextDisplayed) {
                                 break;
                             }
                         }
@@ -204,7 +207,16 @@ public abstract class ReadController {
 
                     TextParams textParams = new TextParams();
 
+
                     if (!TextUtils.isEmpty(value)) {
+
+                        BookContent bookContent = bookContentList.getContent(bookContentList.position);
+                        long start = bookContent.start;
+                        for (int i = 0; i < bookContent.text.length && i <= bookContentList.index; i++) {
+                            start += bookContent.text[i].length() + 1 /* space*/;
+                        }
+
+                        percent = (start * 100.0f) / document.book.contentSize;
 
                         int highlightIndex = getHighlightIndex(value);
 
@@ -312,4 +324,14 @@ public abstract class ReadController {
     }
 
     public abstract void onTextChanged(TextParams textParams);
+
+    public void moveToPosition(long start) {
+
+        getDocument().moveToPosition(start);
+        firstTextDisplayed = false;
+
+        synchronized (STATE) {
+            STATE.notifyAll();
+        }
+    }
 }

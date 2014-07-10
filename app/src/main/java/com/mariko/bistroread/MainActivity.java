@@ -1,6 +1,10 @@
 package com.mariko.bistroread;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -11,21 +15,27 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListPopupWindow;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import org.jsoup.nodes.Document;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.List;
+
+import data.BookSection;
 
 public class MainActivity extends Activity {
 
     private ReadController readController;
 
     private View pausedView;
+    private TextView positionView;
     private SpeedView speedView;
     private HighlighTextView txt;
     private ReadContentTextView txtContentTop;
@@ -60,6 +70,10 @@ public class MainActivity extends Activity {
 
         pausedView = findViewById(R.id.paused);
 
+        positionView = (TextView) findViewById(R.id.position);
+
+        setPercent(0f);
+
         txtContentTop.setDisplayedOnTop(true);
         txtContentBottom.setDisplayedOnTop(false);
 
@@ -68,7 +82,7 @@ public class MainActivity extends Activity {
         txt = (HighlighTextView) findViewById(R.id.txt1);
 
         readController = new ReadController(new File("/mnt/sdcard/Download/simple.fb2")) {
-            //readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
+            //    readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
 
             @Override
             protected void onLoading(final boolean started) {
@@ -80,6 +94,9 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
+                        setPercent(readController.percent);
+
                         if (started) {
                             progressLayout.setVisibility(View.VISIBLE);
                             progressBar.setVisibility(View.VISIBLE);
@@ -108,9 +125,12 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+//                        MainActivity.this.setTitle(readController.getDocument().book.path +  str.bookContentList.);
                         txtContentTop.setText(str);
                         txtContentBottom.setText(str);
                         txt.setText(str);
+
+                        positionView.setText(new DecimalFormat("##.##").format(readController.percent) + " %");
                     }
                 });
             }
@@ -191,8 +211,55 @@ public class MainActivity extends Activity {
             }
         });
 
+        positionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.content_navigator, null);
+
+                builder.setTitle(R.string.go_to);
+                builder.setView(view);
+
+                builder.setPositiveButton(R.string.ok, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+
+                Dialog dialog = builder.create();
+
+                final NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.percent);
+                numberPicker.setMaxValue(100);
+                numberPicker.setValue((int) readController.percent);
+
+                view.findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        numberPicker.setValue(0);
+                    }
+                });
+
+                view.findViewById(R.id.end).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        numberPicker.setValue(100);
+                    }
+                });
+
+                dialog.show();
+
+            }
+        });
+
 
         updateView();
+    }
+
+    private void setPercent(float value) {
+        positionView.setText(new DecimalFormat("##.##").format(value) + " %");
     }
 
     private void updateView() {
@@ -201,6 +268,8 @@ public class MainActivity extends Activity {
         speedView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
 
         pausedView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
+
+        positionView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
     }
 
 
@@ -213,9 +282,9 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify highlight_text_view parent activity in AndroidManifest.xml.
+
+        readController.pause();
+
         int id = item.getItemId();
 
         if (id == R.id.action_search_file) {
@@ -227,7 +296,7 @@ public class MainActivity extends Activity {
 
         if (id == R.id.action_sections) {
 
-            ListPopupWindow popupWindow = new ListPopupWindow(MainActivity.this);
+            final ListPopupWindow popupWindow = new ListPopupWindow(MainActivity.this);
 
             popupWindow.setAdapter(new BaseAdapter() {
                 @Override
@@ -255,6 +324,17 @@ public class MainActivity extends Activity {
 
                     return view;
 
+                }
+            });
+
+            popupWindow.setModal(true);
+            popupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    BookSection bookSection = readController.getDocument().sections.get(i);
+                    readController.moveToPosition(bookSection.start);
+
+                    popupWindow.dismiss();
                 }
             });
 

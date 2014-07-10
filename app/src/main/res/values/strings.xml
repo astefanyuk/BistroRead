@@ -9,4 +9,8 @@
     <string name="sections">Sections</string>
     <string name="loading_file">Loading %s.\nPlease wait...</string>
     <string name="file_error">Oops. Unable to load book \'%s\'</string>
+    <string name="go_to">Go to...</string>
+    <string name="ok">OK</string>
+    <string name="start">Start</string>
+    <string name="end">End</string>
 </resources>

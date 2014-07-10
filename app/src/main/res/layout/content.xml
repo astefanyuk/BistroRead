@@ -108,7 +108,7 @@
 
         </com.mariko.bistroread.SpeedView>
 
-        <TextView
+        <Button
             android:id="@+id/paused"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -116,6 +116,15 @@
             android:background="@drawable/rounded_bg"
             android:padding="5dip"
             android:text="@string/tap_to_resume" />
+
+        <Button
+            android:id="@+id/position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@drawable/rounded_bg"
+            android:padding="5dip"
+            android:layout_alignParentRight="true" />
 
 
     </RelativeLayout>
