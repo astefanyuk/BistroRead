@@ -37,16 +37,15 @@ public abstract class BookParserBase {
             bookContent.content = s.substring(i, Math.min(s.length(), i + maxPackage));
 
             bookContent.start = start;
+            bookContent.end = start + bookContent.content.length();
 
-            start += s.length();
-
-            bookContent.end = start;
+            start = bookContent.end + 1;
 
             bookContent.save();
 
-            i += maxPackage;
+            Log.d("ABC", bookContent.toString());
 
-            Log.d("ABC", "Saved: " + bookContent.content);
+            i += maxPackage;
         }
 
         return bookContent;

@@ -2,6 +2,7 @@ package data;
 
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -88,12 +89,19 @@ public class BookParserFb2 extends BookParserBase {
                 BookSection bookSection = new BookSection();
                 bookSection.bookId = book.getId();
 
+                //read title, section, content
                 for (Node node : sectionElement.childNodes()) {
+
                     if ("title".equalsIgnoreCase(node.nodeName())) {
+
                         bookSection.title = htmlToString(((Element) node).text());
+
                     } else if ("section".equalsIgnoreCase(node.nodeName())) {
+                        //another section. stop
                         break;
+
                     } else {
+                        //content
                         if (content.length() > 0) {
                             content.append("\n");
                         }
@@ -101,23 +109,35 @@ public class BookParserFb2 extends BookParserBase {
                     }
                 }
 
+                String contentString = "";
+
+                if (!TextUtils.isEmpty(bookSection.title)) {
+                    contentString = bookSection.title + "\n";
+                }
+                contentString += content.toString();
+
                 bookSection.start = start;
 
-                bookSection.end = start + content.length();
+                bookSection.end = start + contentString.length();
 
                 bookSection.save();
 
-                BookContent bookContent = saveContent(content.toString(), bookSection, bookContentPosition, start);
+                Log.d("ABC", bookSection.toString());
+
+                BookContent bookContent = saveContent(contentString.toString(), bookSection, bookContentPosition, start);
+
+                start = bookSection.end + 1;
 
                 if (bookContent != null) {
                     bookContentPosition = bookContent.position;
-                    start = bookContent.start;
                 }
 
             }
 
             book.maxContentPosition = bookContentPosition;
             book.save();
+
+            Log.d("ABC", book.toString());
 
         } catch (Throwable e) {
             e.printStackTrace();

@@ -13,10 +13,14 @@ import java.util.List;
  * Created by AStefaniuk on 6/16/2014.
  */
 public class Document {
-    public Book book;
+    public Book book = new Book();
     public List<BookSection> sections = new ArrayList<BookSection>();
 
     private static int CACHE_OFFSET_COUNT = 2;
+
+    public boolean isValid() {
+        return !sections.isEmpty();
+    }
 
     public static class BookContentList {
 
@@ -50,6 +54,10 @@ public class Document {
         putContentIntoCache();
 
         BookContent current = bookContentList.bookContentList.get(bookContentList.position);
+
+        if (current == null) {
+            return bookContentList;
+        }
 
         if (bookContentList.index < current.text.length) {
 

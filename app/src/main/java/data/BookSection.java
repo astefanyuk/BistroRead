@@ -19,4 +19,9 @@ public class BookSection extends Model {
 
     @Column(name = "End")
     public long end;
+
+    @Override
+    public String toString() {
+        return "BookSection: " + title + " Start=" + start + " End=" + end;
+    }
 }

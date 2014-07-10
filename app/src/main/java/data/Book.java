@@ -4,6 +4,7 @@ import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 
 import java.io.File;
+import java.util.Date;
 
 /**
  * Created by AStefaniuk on 6/12/2014.
@@ -34,4 +35,8 @@ public class Book extends Model {
         modifiedDate = file.lastModified();
     }
 
+    @Override
+    public String toString() {
+        return "Book: " + path + " Size=" + size + " ModifiedDate=" + (new Date(modifiedDate)) + " Position=" + position + " MaxContentPosition=" + maxContentPosition;
+    }
 }

@@ -34,4 +34,9 @@ public class BookContent extends Model {
             text = new String[]{};
         }
     }
+
+    @Override
+    public String toString() {
+        return "BookContent: " + " Start=" + start + " End=" + end + " Position=" + position + " Text=" + content;
+    }
 }

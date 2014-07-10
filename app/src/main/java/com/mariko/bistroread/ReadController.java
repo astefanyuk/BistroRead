@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Objects;
 
 import data.BookParser;
 
@@ -27,7 +28,8 @@ public abstract class ReadController {
 
     private final static HashSet<String> prefferedCharacters;
 
-    private Boolean isPaused = false;
+    private final Object STATE = new Object();
+    private Boolean isPaused = true;
 
     private final SharedPreferences pref;
 
@@ -48,14 +50,16 @@ public abstract class ReadController {
     }
 
     public void changePaused() {
-        synchronized (isPaused) {
+        synchronized (STATE) {
             isPaused = !isPaused;
+            STATE.notifyAll();
         }
     }
 
     public void pause() {
-        synchronized (isPaused) {
+        synchronized (STATE) {
             isPaused = true;
+            STATE.notifyAll();
         }
     }
 
@@ -122,6 +126,8 @@ public abstract class ReadController {
         return text;
     }
 
+    private boolean firstTextDisplayed;
+
     public void start() {
 
         if (thread != null) {
@@ -140,21 +146,35 @@ public abstract class ReadController {
                     onLoading(false);
                 }
 
-                while (true) {
+                if (!document.isValid()) {
+                    return;
+                }
 
-                    boolean isInPaused = false;
+                while (!isCanceled) {
 
-                    synchronized (isPaused) {
-                        isInPaused = isPaused;
-                    }
+                    if (firstTextDisplayed) {
 
-                    if (isInPaused) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        while (!isCanceled) {
+
+                            boolean isInPaused = false;
+
+                            try {
+                                synchronized (STATE) {
+                                    if (isPaused) {
+                                        STATE.wait();
+                                    }
+                                    isInPaused = isPaused;
+                                }
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                                return;
+                            }
+
+                            if (!isInPaused) {
+                                break;
+                            }
                         }
-                        continue;
+
                     }
 
                     final int step = 10;
@@ -175,6 +195,8 @@ public abstract class ReadController {
                             }
                         }
                     }
+
+                    firstTextDisplayed = true;
 
                     data.Document.BookContentList bookContentList = document.getContentNextWord();
 

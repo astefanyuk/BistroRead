@@ -85,7 +85,14 @@ public class MainActivity extends Activity {
                             progressBar.setVisibility(View.VISIBLE);
                             progressBarStatus.setText(GApp.sInstance.getString(R.string.loading_file, readController.getFile().getName()));
                         } else {
-                            progressLayout.setVisibility(View.GONE);
+
+                            if (!readController.getDocument().isValid()) {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                progressLayout.setVisibility(View.VISIBLE);
+                                progressBarStatus.setText(GApp.sInstance.getString(R.string.file_error, readController.getFile().getAbsolutePath()));
+                            } else {
+                                progressLayout.setVisibility(View.GONE);
+                            }
                         }
 
                     }
@@ -124,6 +131,11 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
+
+                if (!readController.getDocument().isValid()) {
+                    return true;
+                }
+
                 readController.changePaused();
                 updateView();
 
@@ -132,6 +144,10 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
+
+                if (!readController.getDocument().isValid()) {
+                    return true;
+                }
 
                 readController.pause();
 
