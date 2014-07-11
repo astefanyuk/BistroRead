@@ -96,19 +96,27 @@ public class ReadContentTextView extends View {
             return;
         }
 
+        if (text == null) {
+            invalidate();
+            return;
+        }
+
         int width = getMeasuredWidth();
 
         StaticLayout next = null;
 
         int maxHeight = getMeasuredHeight();
 
-        BookContent currentBookContent = text.bookContentList.getContent(text.bookContentList.position);
+        long position = text.position;
+        int index = text.index;
+
+        BookContent currentBookContent = text.bookContentList.getContent(position);
 
         if (displayedOnTop) {
 
             String buffer = "";
 
-            for (int i = text.bookContentList.position; i >= 0; i--) {
+            for (long i = position; i >= 0; i--) {
 
                 BookContent bookContent = text.bookContentList.getContent(i);
 
@@ -118,8 +126,8 @@ public class ReadContentTextView extends View {
 
                 int startPosition;
 
-                if (i == text.bookContentList.position) {
-                    startPosition = text.bookContentList.index - 1;
+                if (i == position) {
+                    startPosition = index - 1;
                 } else {
                     startPosition = bookContent.text.length - 1;
                 }
@@ -146,7 +154,7 @@ public class ReadContentTextView extends View {
 
             StringBuffer buffer = new StringBuffer();
 
-            for (int i = text.bookContentList.position; ; i++) {
+            for (long i = position; ; i++) {
 
                 BookContent bookContent = text.bookContentList.getContent(i);
 
@@ -156,8 +164,8 @@ public class ReadContentTextView extends View {
 
                 int startPosition;
 
-                if (i == text.bookContentList.position) {
-                    startPosition = text.bookContentList.index + 1;
+                if (i == position) {
+                    startPosition = index + 1;
                 } else {
                     startPosition = 0;
                 }

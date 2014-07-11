@@ -2,7 +2,6 @@ package com.mariko.bistroread;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -22,12 +21,13 @@ import android.widget.ListPopupWindow;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
-import org.jsoup.nodes.Document;
+import com.activeandroid.query.Select;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import data.Book;
 import data.BookSection;
 
 public class MainActivity extends Activity {
@@ -81,63 +81,6 @@ public class MainActivity extends Activity {
 
         txt = (HighlighTextView) findViewById(R.id.txt1);
 
-        readController = new ReadController(new File("/mnt/sdcard/Download/simple.fb2")) {
-            //    readController = new ReadController(new File("/mnt/sdcard/Download/01_Harry_Potter_i_Filosovskij_Kamen.fb2")) {
-
-            @Override
-            protected void onLoading(final boolean started) {
-
-                if (isFinishing()) {
-                    return;
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        setPercent(readController.percent);
-
-                        if (started) {
-                            progressLayout.setVisibility(View.VISIBLE);
-                            progressBar.setVisibility(View.VISIBLE);
-                            progressBarStatus.setText(GApp.sInstance.getString(R.string.loading_file, readController.getFile().getName()));
-                        } else {
-
-                            if (!readController.getDocument().isValid()) {
-                                progressBar.setVisibility(View.INVISIBLE);
-                                progressLayout.setVisibility(View.VISIBLE);
-                                progressBarStatus.setText(GApp.sInstance.getString(R.string.file_error, readController.getFile().getAbsolutePath()));
-                            } else {
-                                progressLayout.setVisibility(View.GONE);
-                            }
-                        }
-
-                    }
-                });
-            }
-
-            @Override
-            public void onTextChanged(final TextParams str) {
-                if (isFinishing()) {
-                    return;
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-//                        MainActivity.this.setTitle(readController.getDocument().book.path +  str.bookContentList.);
-                        txtContentTop.setText(str);
-                        txtContentBottom.setText(str);
-                        txt.setText(str);
-
-                        positionView.setText(new DecimalFormat("##.##").format(readController.percent) + " %");
-                    }
-                });
-            }
-        };
-
-        readController.start();
-
         findViewById(R.id.paused).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,7 +88,12 @@ public class MainActivity extends Activity {
             }
         });
 
-        speedView.setReadController(readController);
+        //open recently
+        Book book = new Select().from(Book.class).orderBy("OpenDate DESC").executeSingle();
+
+        File file = book == null ? new File("") : new File(book.path);
+
+        createReadController(file);
 
         final GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
 
@@ -169,7 +117,7 @@ public class MainActivity extends Activity {
                     return true;
                 }
 
-                readController.pause();
+                readController.pause(true);
 
                 int max = -1;
 
@@ -222,16 +170,19 @@ public class MainActivity extends Activity {
                 builder.setTitle(R.string.go_to);
                 builder.setView(view);
 
+                final NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.percent);
+
                 builder.setPositiveButton(R.string.ok, new android.content.DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-
+                        long absPosition = (long) (readController.getDocument().book.contentSize / 100.0f * numberPicker.getValue());
+                        readController.moveToAbsPosition(absPosition);
                     }
                 });
 
-                Dialog dialog = builder.create();
+                final Dialog dialog = builder.create();
 
-                final NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.percent);
+
                 numberPicker.setMaxValue(100);
                 numberPicker.setValue((int) readController.percent);
 
@@ -256,6 +207,87 @@ public class MainActivity extends Activity {
 
 
         updateView();
+
+        fileChooser.listener = new FileChooser.Listener() {
+            @Override
+            public void fileSelected(File file) {
+
+                drawer_layout.closeDrawers();
+
+                createReadController(file);
+            }
+        };
+    }
+
+    private void createReadController(File file) {
+
+        if (readController != null) {
+            readController.close();
+        }
+
+        txtContentTop.setText(null);
+        txtContentBottom.setText(null);
+        positionView.setText("");
+        txt.setText(null);
+
+        readController = new ReadController(new File(file.getAbsolutePath())) {
+
+            @Override
+            protected void onLoading(final boolean started) {
+
+                if (isFinishing()) {
+                    return;
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        setPercent(readController.percent);
+
+                        if (started) {
+
+                            progressLayout.setVisibility(View.VISIBLE);
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressBarStatus.setText(GApp.sInstance.getString(R.string.loading_file, readController.getFile().getName()));
+                        } else {
+
+                            if (!readController.getDocument().isValid()) {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                progressLayout.setVisibility(View.VISIBLE);
+                                progressBarStatus.setText(GApp.sInstance.getString(R.string.file_error, readController.getFile().getAbsolutePath()));
+                            } else {
+                                progressLayout.setVisibility(View.GONE);
+                            }
+                        }
+
+                    }
+                });
+            }
+
+            @Override
+            public void onTextChanged(final TextParams str) {
+                if (isFinishing()) {
+                    return;
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+//                        MainActivity.this.setTitle(readController.getDocument().book.path +  str.bookContentList.);
+                        txtContentTop.setText(str);
+                        txtContentBottom.setText(str);
+                        txt.setText(str);
+
+                        positionView.setText(new DecimalFormat("##.##").format(readController.percent) + " %");
+                    }
+                });
+            }
+        };
+
+        readController.start();
+
+        speedView.setReadController(readController);
     }
 
     private void setPercent(float value) {
@@ -266,9 +298,7 @@ public class MainActivity extends Activity {
         txtContentTop.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
         txtContentBottom.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
         speedView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
-
         pausedView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
-
         positionView.setVisibility(readController.isPaused() ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -283,7 +313,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        readController.pause();
+        readController.pause(true);
 
         int id = item.getItemId();
 
@@ -332,7 +362,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     BookSection bookSection = readController.getDocument().sections.get(i);
-                    readController.moveToPosition(bookSection.start);
+                    readController.moveToAbsPosition(bookSection.start);
 
                     popupWindow.dismiss();
                 }

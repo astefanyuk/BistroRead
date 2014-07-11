@@ -15,9 +15,11 @@ public class BookParserEpub extends BookParserBase {
         super(file);
     }
 
-    @Override
-    public void parseContent() {
 
+    @Override
+    public void parseContent(data.Book book) {
+
+        /*
         FileInputStream inputStream = null;
 
         try {
@@ -37,5 +39,6 @@ public class BookParserEpub extends BookParserBase {
                 }
             }
         }
+            */
     }
 }

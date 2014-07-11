@@ -5,10 +5,10 @@ import android.text.TextUtils;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.Objects;
 
 import data.BookContent;
 import data.BookParser;
+import data.Document;
 
 /**
  * Created by AStefaniuk on 5/21/2014.
@@ -53,16 +53,21 @@ public abstract class ReadController {
     }
 
     public void changePaused() {
-        synchronized (STATE) {
-            isPaused = !isPaused;
-            STATE.notifyAll();
-        }
+        pause(!isPaused);
     }
 
-    public void pause() {
+    public void pause(boolean paused) {
         synchronized (STATE) {
-            isPaused = true;
+            isPaused = paused;
             STATE.notifyAll();
+        }
+
+        saveBook();
+    }
+
+    private void saveBook() {
+        if (getDocument().book != null) {
+            getDocument().book.save2();
         }
     }
 
@@ -101,6 +106,9 @@ public abstract class ReadController {
         public String left;
         public String center;
         public String right;
+
+        public long position;
+        public int index;
 
         public data.Document.BookContentList bookContentList;
     }
@@ -159,7 +167,7 @@ public abstract class ReadController {
 
                         while (!isCanceled) {
 
-                            boolean isInPaused = false;
+                            boolean isInPaused;
 
                             try {
                                 synchronized (STATE) {
@@ -199,20 +207,22 @@ public abstract class ReadController {
                         }
                     }
 
-                    firstTextDisplayed = true;
+                    data.Document.BookContentList bookContentList = document.getContentWord(firstTextDisplayed);
 
-                    data.Document.BookContentList bookContentList = document.getContentNextWord();
+                    firstTextDisplayed = true;
 
                     String value = bookContentList.getText();
 
                     TextParams textParams = new TextParams();
 
+                    textParams.position = document.book.contentPosition;
+                    textParams.index = document.book.contentIndex;
 
                     if (!TextUtils.isEmpty(value)) {
 
-                        BookContent bookContent = bookContentList.getContent(bookContentList.position);
+                        BookContent bookContent = bookContentList.getContent(document.book.contentPosition);
                         long start = bookContent.start;
-                        for (int i = 0; i < bookContent.text.length && i <= bookContentList.index; i++) {
+                        for (int i = 0; i < bookContent.text.length && i <= document.book.contentIndex; i++) {
                             start += bookContent.text[i].length() + 1 /* space*/;
                         }
 
@@ -325,9 +335,11 @@ public abstract class ReadController {
 
     public abstract void onTextChanged(TextParams textParams);
 
-    public void moveToPosition(long start) {
+    public void moveToAbsPosition(long start) {
 
-        getDocument().moveToPosition(start);
+        pause(true);
+
+        getDocument().moveToAbsPosition(start);
         firstTextDisplayed = false;
 
         synchronized (STATE) {

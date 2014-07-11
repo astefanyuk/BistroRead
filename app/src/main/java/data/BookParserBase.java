@@ -18,9 +18,9 @@ public abstract class BookParserBase {
         this.file = file;
     }
 
-    public abstract void parseContent();
+    public abstract void parseContent(Book book);
 
-    protected BookContent saveContent(String s, BookSection section, int bookContentPosition, long start) {
+    protected BookContent saveContent(String s, BookSection section, long bookContentPosition, long start) {
 
         BookContent bookContent = null;
 
@@ -42,8 +42,6 @@ public abstract class BookParserBase {
             start = bookContent.end + 1;
 
             bookContent.save();
-
-            //Log.d("ABC", bookContent.toString());
 
             i += maxPackage;
         }

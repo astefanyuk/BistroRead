@@ -63,7 +63,7 @@ public class BookParserFb2 extends BookParserBase {
     }
 
     @Override
-    public void parseContent() {
+    public void parseContent(Book book) {
 
         readEncoding();
 
@@ -72,12 +72,9 @@ public class BookParserFb2 extends BookParserBase {
         try {
             stream = new FileInputStream(file);
 
-            Book book = new Book(file);
-            book.save();
-
             long start = 0;
 
-            int bookContentPosition = -1;
+            long bookContentPosition = -1;
 
             org.jsoup.nodes.Document doc = Jsoup.parse(stream, encoding, "");
             for (Element sectionElement : doc.select("section")) {
@@ -119,8 +116,6 @@ public class BookParserFb2 extends BookParserBase {
 
                 bookSection.save();
 
-                Log.d("ABC", bookSection.toString());
-
                 BookContent bookContent = saveContent(content.toString(), bookSection, bookContentPosition, start);
 
                 start = bookSection.end + 1;
@@ -133,9 +128,7 @@ public class BookParserFb2 extends BookParserBase {
 
             book.maxContentPosition = bookContentPosition;
             book.contentSize = start;
-            book.save();
-
-            Log.d("ABC", book.toString());
+            book.save2();
 
         } catch (Throwable e) {
             e.printStackTrace();

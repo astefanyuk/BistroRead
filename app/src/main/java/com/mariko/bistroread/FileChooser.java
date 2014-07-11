@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -18,6 +19,12 @@ import java.util.List;
 
 
 public class FileChooser extends ExpandableListView {
+
+    public static interface Listener {
+        void fileSelected(File file);
+    }
+
+    public Listener listener;
 
     private static class FileGroup {
         public String title;
@@ -98,7 +105,16 @@ public class FileChooser extends ExpandableListView {
 
             @Override
             public boolean isChildSelectable(int i, int i2) {
-                return false;
+                return true;
+            }
+        });
+
+        setOnChildClickListener(new OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i2, long l) {
+                listener.fileSelected(groupList.get(i).files.get((int) i2));
+
+                return true;
             }
         });
     }

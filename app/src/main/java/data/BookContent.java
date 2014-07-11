@@ -22,7 +22,7 @@ public class BookContent extends Model {
     public long sectionId;
 
     @Column(name = "Position")
-    public int position;
+    public long position;
 
     public String[] text;
 

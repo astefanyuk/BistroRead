@@ -19,14 +19,20 @@ public class Book extends Model {
     @Column(name = "ModifiedSize")
     public long modifiedDate;
 
-    @Column(name = "Position")
-    public long position;
+    @Column(name = "ContentPosition")
+    public long contentPosition;
+
+    @Column(name = "ContentIndex")
+    public int contentIndex;
 
     @Column(name = "MaxContentPosition")
     public long maxContentPosition;
 
     @Column(name = "ContentSize")
     public long contentSize;
+
+    @Column(name = "OpenDate")
+    public long openDate;
 
     public Book() {
 
@@ -40,6 +46,14 @@ public class Book extends Model {
 
     @Override
     public String toString() {
-        return "Book: " + path + " Size=" + size + " ModifiedDate=" + (new Date(modifiedDate)) + " Position=" + position + " MaxContentPosition=" + maxContentPosition;
+        return "Book: " + path + " Size=" + size + " ModifiedDate=" +
+                (new Date(modifiedDate)) + " ContentPosition=" + contentPosition +
+                " ContentIndex=" + contentIndex +
+                " MaxContentPosition=" + maxContentPosition;
+    }
+
+    public Long save2() {
+        openDate = System.currentTimeMillis();
+        return save();
     }
 }

@@ -18,59 +18,63 @@ public class Document {
 
     private static int CACHE_OFFSET_COUNT = 2;
 
-    public static class BookContentList {
+    public class BookContentList {
 
-        private LruCache<Integer, BookContent> bookContentList = new LruCache<Integer, BookContent>(CACHE_OFFSET_COUNT * 2 + 2);
-
-        public int position;
-        public int index = -1;
+        private LruCache<Long, BookContent> bookContentList = new LruCache<Long, BookContent>(CACHE_OFFSET_COUNT * 2 + 2);
 
         public String getText() {
 
-            BookContent bookContent = getContent(position);
+            BookContent bookContent = getContent(book.contentPosition);
 
             if (bookContent != null) {
 
-                if (bookContent.text != null && index >= 0 && index < bookContent.text.length) {
-                    return bookContent.text[index];
+                if (bookContent.text != null && book.contentIndex >= 0 && book.contentIndex < bookContent.text.length) {
+                    return bookContent.text[book.contentIndex];
                 }
             }
             return null;
         }
 
-        public BookContent getContent(int index) {
+        public BookContent getContent(long index) {
             return bookContentList.get(index);
         }
     }
 
     private BookContentList bookContentList = new BookContentList();
 
-    public BookContentList getContentNextWord() {
+    public BookContentList getContentWord(boolean next) {
 
         putContentIntoCache();
 
-        BookContent current = bookContentList.bookContentList.get(bookContentList.position);
+        BookContent current = bookContentList.bookContentList.get(book.contentPosition);
 
         if (current == null) {
             return bookContentList;
         }
 
-        if (bookContentList.index < current.text.length) {
+        if (book.contentIndex < current.text.length) {
 
-            if (bookContentList.index == current.text.length - 1 && current.position == book.maxContentPosition) {
+            if (book.contentIndex == current.text.length - 1 && current.position == book.maxContentPosition) {
                 //last item
                 return bookContentList;
             }
 
-            ++bookContentList.index;
+            if (next) {
+                ++book.contentIndex;
+            }
+
 
         } else {
 
-            current = bookContentList.bookContentList.get(bookContentList.position + 1);
+            current = bookContentList.bookContentList.get(book.contentPosition + 1);
 
-            if (current != null) {
-                ++bookContentList.position;
-                bookContentList.index = 0;
+            if (current != null && next) {
+
+                ++book.contentPosition;
+                book.contentIndex = 0;
+
+                book.save2();
+
             }
         }
 
@@ -80,8 +84,8 @@ public class Document {
 
     private void putContentIntoCache() {
 
-        for (int i = Math.max(0, bookContentList.position - CACHE_OFFSET_COUNT);
-             i <= Math.min(book.maxContentPosition, bookContentList.position + CACHE_OFFSET_COUNT);
+        for (long i = Math.max(0, book.contentPosition - CACHE_OFFSET_COUNT);
+             i <= Math.min(book.maxContentPosition, book.contentPosition + CACHE_OFFSET_COUNT);
              i++) {
 
             if (bookContentList.bookContentList.get(i) != null) {
@@ -104,8 +108,7 @@ public class Document {
 
     private void deleteByBookId(long id) {
 
-        //TODO:
-        (new Delete()).from(Book.class).execute();
+        (new Delete()).from(Book.class).and("id=?", id).execute();
         (new Delete()).from(BookContent.class).execute();
         (new Delete()).from(BookSection.class).execute();
     }
@@ -114,14 +117,15 @@ public class Document {
 
         this.book = new Select().from(Book.class).and("path = ?", file.getAbsoluteFile()).executeSingle();
         if (this.book != null) {
+
+            this.sections = new Select().from(BookSection.class).and("bookId = ?", this.book.getId()).orderBy("start ASC ").execute();
+
             if (file.length() != this.book.size || file.lastModified() != this.book.modifiedDate) {
                 deleteByBookId(this.book.getId());
                 this.book = null;
+                this.sections.clear();
+                return;
             }
-        }
-        if (this.book != null) {
-            this.sections = new Select().from(BookSection.class).and("bookId = ?", this.book.getId()).orderBy("start ASC ").execute();
-
         }
     }
 
@@ -129,15 +133,14 @@ public class Document {
         return !sections.isEmpty();
     }
 
-    public void moveToPosition(long position) {
+    public void moveToAbsPosition(long position) {
 
         BookContent bookContent = new Select().from(BookContent.class).and("Start <= ?", position).and("End >= ?", position).executeSingle();
 
-        bookContentList = new BookContentList();
+        book.contentPosition = bookContent.position;
+        book.contentIndex = 0;
 
-        bookContentList.position = bookContent.position;
-
-        bookContentList.bookContentList.put(bookContent.position, bookContent);
+        book.save2();
     }
 
 }

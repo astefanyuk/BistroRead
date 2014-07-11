@@ -29,11 +29,9 @@ public class HighlighTextView extends LinearLayout {
 
     private TextView[] txtList;
 
-    private int MAX_FONT = 90;
+    private int MAX_FONT = 70;
 
     private int font;
-
-    private Rect rect = new Rect();
 
     private final TextPaint textPaint;
 
@@ -89,6 +87,10 @@ public class HighlighTextView extends LinearLayout {
 
         for (TextView txt : txtList) {
             txt.setText("");
+        }
+
+        if (textParams == null) {
+            return;
         }
 
         StringBuffer buffer = new StringBuffer();

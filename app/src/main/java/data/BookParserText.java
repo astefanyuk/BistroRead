@@ -11,7 +11,7 @@ public class BookParserText extends BookParserBase {
     }
 
     @Override
-    public void parseContent() {
+    public void parseContent(data.Book book) {
 
     }
 }

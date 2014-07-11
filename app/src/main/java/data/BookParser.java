@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -44,10 +45,8 @@ public class BookParser {
             document.read(file);
 
             if (document.book != null && !document.sections.isEmpty()) {
-                //   return document;
+                return document;
             }
-
-            //InputStream stream = GApp.sInstance.getResources().getAssets().open("test/sample.fb2");
 
             BookParserBase bookParserBase = getBookParser(file);
 
@@ -55,11 +54,17 @@ public class BookParser {
 
             try {
 
-                (new Delete()).from(Book.class).execute();
                 (new Delete()).from(BookContent.class).execute();
                 (new Delete()).from(BookSection.class).execute();
 
-                bookParserBase.parseContent();
+                Book book = new Select().from(Book.class).and("path = ?", file.getAbsoluteFile()).executeSingle();
+
+                if (book == null) {
+                    book = new Book(file);
+                }
+                book.save2();
+
+                bookParserBase.parseContent(book);
 
                 ActiveAndroid.setTransactionSuccessful();
 
