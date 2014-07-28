@@ -111,12 +111,12 @@ public class BookParserFb2 extends BookParserBase {
                 }
 
                 bookSection.start = start;
-
-                bookSection.end = start + content.length();
-
                 bookSection.save();
 
                 BookContent bookContent = saveContent(content.toString(), bookSection, bookContentPosition, start);
+
+                bookSection.end = bookContent.end;
+                bookSection.save();
 
                 start = bookSection.end + 1;
 
