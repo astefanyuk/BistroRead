@@ -28,6 +28,10 @@ public class BookContent extends Model {
 
     public void parseContent() {
 
+        if (text != null) {
+            return;
+        }
+
         if (!TextUtils.isEmpty(content)) {
             text = content.split(" ");
         } else {
