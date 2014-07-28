@@ -138,7 +138,21 @@ public class Document {
         BookContent bookContent = new Select().from(BookContent.class).and("Start <= ?", position).and("End >= ?", position).executeSingle();
 
         book.contentPosition = bookContent.position;
+
         book.contentIndex = 0;
+
+        bookContent.parseContent();
+        long shift = position - bookContent.start;
+        for (int i = 0; i < bookContent.text.length; i++) {
+
+            book.contentIndex = i;
+
+            if (shift <= bookContent.text[i].length()) {
+                break;
+            }
+            shift -= (bookContent.text[i].length() + 1);
+
+        }
 
         book.save2();
     }
